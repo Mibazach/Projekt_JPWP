@@ -19,7 +19,6 @@ def get_movies_req(movie_title):
         url = f"http://www.omdbapi.com/?apikey={api_key}&s={movie_title}"
         payload = {}
         headers = {}
-        print(type(headers))
         response = requests.request("GET", url, headers=headers, data=payload)
     except ConnectionError:
         logging.critical("Coudln't connect to the api")

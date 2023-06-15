@@ -1,6 +1,7 @@
+import json
 import logging
+import api_functionality
 import gui
-
 
 logging.basicConfig(
     filename='app.log',
@@ -8,9 +9,6 @@ logging.basicConfig(
     format='%(name)s - %(levelname)s - %(message)s',
     level=logging.DEBUG
 )
-
-
-gui
 
 
 """
@@ -22,8 +20,7 @@ movie: | movie_id | title | year | type | poster | posted_by |
 """
 
 
-"""
-returned_movies_str = api_functionality.get_movies_req("Star Wars")
+returned_movies_str = api_functionality.get_movies_req("Friends")
 returned_movies_json = json.loads(returned_movies_str)
 
 if returned_movies_json['Response'] != 'False':
@@ -31,4 +28,3 @@ if returned_movies_json['Response'] != 'False':
         print(movie)
 else:
     print('Movie not found!')
-"""
