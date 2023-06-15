@@ -106,7 +106,7 @@ class LoginWindow(QMainWindow):
         elif len(username) == 0 or len(password) == 0:
             self.label_err.setText("One of the fields is empty")
 
-        else:  # bazodanowe logowanie tu trzeba
+        else:
             mydb = database_con.data_base_connect()
             my_cursor = mydb.cursor()
             uname = f'"{username}"'
@@ -186,7 +186,7 @@ class RegisterWindow(QMainWindow):
         self.back_to_login_button.clicked.connect(prev_widget)
 
         self.label_reg_success = QLabel("", self.widget)
-        self.label_reg_success.move(240, 290)
+        self.label_reg_success.move(370, 310)
         self.label_reg_success.resize(250, 28)
         self.label_reg_success.setStyleSheet("font: 10pt \"MS Shell Dlg 2\"; color: green; background-color: "
                                              "rgba(255, 255, 255, 0);")
@@ -203,7 +203,7 @@ class RegisterWindow(QMainWindow):
         elif len(password) > 50:
             self.label_reg_err.setText("Password length must be < 50 chars")
 
-        else:  # bazodanowe logowanie tu trzeba
+        else:
             mydb = database_con.data_base_connect()
             my_cursor = mydb.cursor()
             my_cursor.execute("SELECT username FROM users")
