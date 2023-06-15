@@ -4,13 +4,22 @@ from PyQt5.QtCore import QSize, Qt
 from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import QApplication, QWidget, QLabel, QMainWindow, QLineEdit, QPushButton, QVBoxLayout, QShortcut
 import sqlite3
-
+import database_con
 
 # TO DO
 # three widgets' interfaces
 # password encryption in the authentication system
 # choose a better colour palette
 # connection to a real cloud database
+
+
+"""
+Zakładam na razie takie dwie tabele z takimi kolumnami:
+
+user: | user_id | login | password | create_time |
+movie: | movie_id | title | year | type | poster | posted_by | 
+
+"""
 
 
 def next_widget():
@@ -98,12 +107,12 @@ class LoginWindow(QMainWindow):
             self.label_err.setText("One of the fields is empty")
 
         else:  # bazodanowe logowanie tu trzeba
-            conn = sqlite3.connect("baza.db")
-            cursor = conn.cursor()
-            query = 'SELECT password FROM users WHERE username =\'' + username + "\'"
-            cursor.execute(query)
-            result = cursor.fetchone()
-            conn.close()
+            mydb = database_con.data_base_connect()
+            my_cursor = mydb.cursor()
+            uname = f'"{username}"'
+            my_cursor.execute(f'SELECT password FROM users WHERE username = {uname}')
+            result = my_cursor.fetchone()
+            mydb.close()
             if result is not None:
                 stored_password = result[0]
                 if stored_password == password:
@@ -189,15 +198,25 @@ class RegisterWindow(QMainWindow):
             self.label_reg_err.setText("The fields are empty")
         elif len(username) == 0 or len(password) == 0:
             self.label_reg_err.setText("One of the fields is empty")
+        elif len(username) > 50:
+            self.label_reg_err.setText("Username length must be < 50 chars")
+        elif len(password) > 50:
+            self.label_reg_err.setText("Password length must be < 50 chars")
 
         else:  # bazodanowe logowanie tu trzeba
-            conn = sqlite3.connect("baza.db")
-            cursor = conn.cursor()
-            query = 'INSERT INTO users (username, password, create_time) VALUES (?, ?, CURRENT_TIMESTAMP)'
-            cursor.execute(query, (username, password))
-            conn.commit()
-            conn.close()
-            self.label_reg_success.setText("You registered successfully")
+            mydb = database_con.data_base_connect()
+            my_cursor = mydb.cursor()
+            my_cursor.execute("SELECT username FROM users")
+            list_of_users = my_cursor.fetchall()
+            if (username,) in list_of_users:  # zwraca mi tuple (tupla skurwysyna)
+                self.label_reg_err.setText("This username exists!")
+            else:
+                query = "INSERT INTO users (username, password, create_time) VALUES (%s, %s, CURRENT_TIMESTAMP)"
+                my_cursor.execute(query, (username, password))
+                mydb.commit()
+                mydb.close()
+                self.label_reg_err.clear()
+                self.label_reg_success.setText("You registered successfully")
 
 
 class MainApp(QMainWindow):

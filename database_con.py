@@ -27,7 +27,7 @@ def data_base_connect():
             password=password,
             database=database
         )
-    except mysql.connector.errors.Error:
+    except mysql.connector.errors.DatabaseError:
         logging.critical("Application couldn't connect to the database. Closing application")
         sys.exit(2)
     else:
