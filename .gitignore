@@ -1,0 +1,5 @@
+venv/
+venv/Lib
+venv/Scripts
+credentials.json
+app.log
