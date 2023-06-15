@@ -1,7 +1,4 @@
-import database_con
-import api_functionality
 import logging
-import json
 import gui
 
 
@@ -11,6 +8,7 @@ logging.basicConfig(
     format='%(name)s - %(levelname)s - %(message)s',
     level=logging.DEBUG
 )
+
 
 gui
 
