@@ -26,18 +26,6 @@ def go_to_main():
     auth_widgets.hide()
 
 
-def go_to_home():
-    auth_widgets.setCurrentIndex(3)
-
-
-def go_to_search():
-    auth_widgets.setCurrentIndex(4)
-
-
-def go_to_profile():
-    auth_widgets.setCurrentIndex(5)
-
-
 class LoginWindow(QMainWindow):
     def __init__(self):
         super(LoginWindow, self).__init__()
@@ -212,9 +200,9 @@ class RegisterWindow(QMainWindow):
             self.label_reg_success.setText("You registered successfully")
 
 
-class Home(QMainWindow):
+class MainApp(QMainWindow):
     def __init__(self):
-        super(Home, self).__init__()
+        super(MainApp, self).__init__()
         app_widgets.setWindowTitle("Filmonator")
         self.layout = QVBoxLayout()
         self.layout.setSpacing(0)
@@ -237,7 +225,7 @@ class Home(QMainWindow):
         self.home_but.resize(60, 60)
         home_ico = QIcon('resources/icons/home.png')
         self.home_but.setIcon(home_ico)
-        icon_size = QSize(self.home_but.size().width()-5, self.home_but.size().height()-5)
+        icon_size = QSize(self.home_but.size().width() - 5, self.home_but.size().height() - 5)
         self.home_but.setIconSize(icon_size)
 
         self.search_but = QPushButton("", self.bar)
@@ -256,7 +244,7 @@ class Home(QMainWindow):
 
         self.layout.addWidget(self.bar, stretch=1)
 
-        self.wall = QWidget()
+        self.wall = QtWidgets.QStackedWidget()
         self.wall.setGeometry(-1, 91, 1000, 650)
         self.wall.setStyleSheet("background-color: qlineargradient(spread:pad, x1:0, y1:0, x2:0, y2:1, stop:0 rgba("
                                 "0, 0, 0, 255), stop:1 rgba(158, 158, 158, 255))")
@@ -266,6 +254,34 @@ class Home(QMainWindow):
         self.layout.addWidget(self.wall, stretch=9)
         self.central_widget.setLayout(self.layout)
         self.setCentralWidget(self.central_widget)
+
+        self.home_view = QWidget()
+        self.home_view_label = QLabel("Home view", self.home_view)
+        self.home_view_label.setStyleSheet("font: 50pt \"MS Shell Dlg 2\"; color: rgb(255, 255, 255); "
+                                           "background-color: rgba(255, 255, 255, 0);")
+        self.home_view_label.move(100, 100)
+        self.wall.addWidget(self.home_view)
+        self.home_but.clicked.connect(lambda: self.wall.setCurrentWidget(self.home_view))
+        #
+        #
+
+        self.search_view = QWidget()
+        self.search_view_label = QLabel("Search view", self.search_view)
+        self.search_view_label.setStyleSheet("font: 50pt \"MS Shell Dlg 2\"; color: rgb(255, 255, 255); "
+                                             "background-color: rgba(255, 255, 255, 0);")
+        self.search_view_label.move(200, 200)
+        self.wall.addWidget(self.search_view)
+        self.search_but.clicked.connect(lambda: self.wall.setCurrentWidget(self.search_view))
+        #
+        #
+
+        self.profile_view = QWidget()
+        self.profile_view_label = QLabel("Profile view", self.profile_view)
+        self.profile_view_label.setStyleSheet("font: 50pt \"MS Shell Dlg 2\"; color: rgb(255, 255, 255); "
+                                              "background-color: rgba(255, 255, 255, 0);")
+        self.profile_view_label.move(300, 300)
+        self.wall.addWidget(self.profile_view)
+        self.profile_but.clicked.connect(lambda: self.wall.setCurrentWidget(self.profile_view))
 
 
 app = QApplication(sys.argv)
@@ -284,7 +300,7 @@ app_widgets.setFixedWidth(1000)
 app_widgets.setFixedHeight(750)
 auth_widgets.show()
 
-home_scr = Home()
-app_widgets.addWidget(home_scr)
+main_scr = MainApp()
+app_widgets.addWidget(main_scr)
 
 sys.exit(app.exec_())
