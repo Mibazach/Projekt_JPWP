@@ -50,4 +50,11 @@ def add_movie_to_db(user_id, movie_information_json, rating):
         return 1
 
 
+def find_movies(search_input):
+    returned_movies_str = get_movies_req(search_input)
+    returned_movies_json = json.loads(returned_movies_str)
+    if returned_movies_json['Response'] != 'False':
+        return returned_movies_json["Search"]
+    else:
+        return None
 

@@ -6,7 +6,7 @@ from PyQt5.QtWidgets import QApplication, QWidget, QLabel, QMainWindow, QLineEdi
     QSizePolicy
 import database_con
 import hashlib
-import movies
+import api_functionality
 
 # TO DO
 # three widgets' interfaces
@@ -21,6 +21,7 @@ movies: | movie_id | title | year | type | poster | posted_by |
 
 """
 
+global user_id
 
 def next_widget():
     auth_widgets.setCurrentIndex(auth_widgets.currentIndex() + 1)
@@ -336,7 +337,7 @@ class MainApp(QMainWindow):
         self.profile_but.clicked.connect(lambda: self.wall.setCurrentWidget(self.profile_view))
 
     def update_search_result(self):
-        self.search_result = movies.find_movies(self.lineEdit_searchbar.text())
+        self.search_result = api_functionality.find_movies(self.lineEdit_searchbar.text())
         self.display_search_result()
 
     def display_search_result(self):

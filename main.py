@@ -1,5 +1,5 @@
 import logging
-#import gui
+import gui
 import api_functionality
 import json
 
