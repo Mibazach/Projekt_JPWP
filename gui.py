@@ -41,6 +41,7 @@ class LoginWindow(QMainWindow):
         super(LoginWindow, self).__init__()
         self.setGeometry(0, 0, 800, 550)
         auth_widgets.setWindowTitle("Welcome to Filmonator!")
+        auth_widgets.setWindowIcon(QIcon('resources/icons/app_icon.png'))
         self.widget = QWidget()
         self.widget.setGeometry(-1, -1, 801, 551)
         self.widget.setStyleSheet("background-color: qlineargradient(spread:pad, x1:0, y1:0.102, x2:1, "
@@ -227,6 +228,7 @@ class MainApp(QMainWindow):
     def __init__(self):
         self.search_result = None
         super(MainApp, self).__init__()
+        app_widgets.setWindowIcon(QIcon('resources/icons/app_icon.png'))
         app_widgets.setWindowTitle("Filmonator")
         self.layout = QVBoxLayout()
         self.layout.setSpacing(0)
