@@ -2,22 +2,21 @@ import sys
 from PyQt5 import QtWidgets
 from PyQt5.QtCore import QSize, Qt
 from PyQt5.QtGui import QIcon
-from PyQt5.QtWidgets import QApplication, QWidget, QLabel, QMainWindow, QLineEdit, QPushButton, QVBoxLayout, QShortcut
+from PyQt5.QtWidgets import QApplication, QWidget, QLabel, QMainWindow, QLineEdit, QPushButton, QVBoxLayout, QShortcut, \
+    QSizePolicy
 import database_con
-import hashlib
+import movies
 
 # TO DO
 # three widgets' interfaces
-# password encryption in the authentication system
+# too long search result
 # choose a better colour palette
-# connection to a real cloud database
-
 
 """
 Zakładam na razie takie dwie tabele z takimi kolumnami:
 
-users: | user_id | login | password | create_time |
-movies: | movie_id | title | year | type | poster | posted_by | 
+user: | user_id | login | password | create_time |
+movie: | movie_id | title | year | type | poster | posted_by | 
 
 """
 
@@ -115,7 +114,7 @@ class LoginWindow(QMainWindow):
             mydb.close()
             if result is not None:
                 stored_password = result[0]
-                if stored_password == hashlib.md5(password.encode()).hexdigest():
+                if stored_password == password:
                     self.label_err.setText("")
                     go_to_main()
             self.label_err.setText("Invalid username or password")
@@ -211,10 +210,7 @@ class RegisterWindow(QMainWindow):
             if (username,) in list_of_users:  # zwraca mi tuple (tupla skurwysyna)
                 self.label_reg_err.setText("This username exists!")
             else:
-                password = hashlib.md5(password.encode())
-                password = password.hexdigest()
-                print(password, type(password))
-                query = 'INSERT INTO users (username, password, create_time) VALUES (%s, %s, CURRENT_TIMESTAMP)'
+                query = "INSERT INTO users (username, password, create_time) VALUES (%s, %s, CURRENT_TIMESTAMP)"
                 my_cursor.execute(query, (username, password))
                 mydb.commit()
                 mydb.close()
@@ -224,6 +220,7 @@ class RegisterWindow(QMainWindow):
 
 class MainApp(QMainWindow):
     def __init__(self):
+        self.search_result = None
         super(MainApp, self).__init__()
         app_widgets.setWindowTitle("Filmonator")
         self.layout = QVBoxLayout()
@@ -288,12 +285,41 @@ class MainApp(QMainWindow):
         #
 
         self.search_view = QWidget()
-        self.search_view_label = QLabel("Search view", self.search_view)
-        self.search_view_label.setStyleSheet("font: 50pt \"MS Shell Dlg 2\"; color: rgb(255, 255, 255); "
-                                             "background-color: rgba(255, 255, 255, 0);")
-        self.search_view_label.move(200, 200)
+        self.layout = QVBoxLayout(self.search_view)
+        self.search_view.setLayout(self.layout)
+
+        self.searchbar_label = QLabel("Search for a movie:", self.search_view)
+        self.searchbar_label.setStyleSheet("font: 24pt \"MS Shell Dlg 2\"; color: white; "
+                                           "background-color: rgba(255, 255, 255, 0);")
+        self.searchbar_label.move(330, 100)
+        self.searchbar_label.adjustSize()
+        self.lineEdit_searchbar = QLineEdit(self.search_view)
+        self.lineEdit_searchbar.setStyleSheet("font: 20pt \"MS Shell Dlg 2\"; color: white; "
+                                              "background-color: rgba(255, 255, 255, 0);")
+        self.lineEdit_searchbar.setAlignment(Qt.AlignCenter)
+        self.lineEdit_searchbar.resize(600, 100)
+        self.lineEdit_searchbar.move(200, 160)
+        self.search_button = QPushButton(self.search_view)
+        self.search_button.move(700, 160)
+        self.search_button.resize(100, 100)
+        self.search_button.setStyleSheet("background-color: rgba(255, 255, 255, 0);")
+        search_ico = QIcon('resources/icons/search.png')
+        self.search_button.setIcon(search_ico)
+        search_button_size = QSize(100, 100)
+        self.search_button.setIconSize(search_button_size)
+        self.enter = QShortcut(Qt.Key_Return, self.search_button)
+        self.enter.activated.connect(lambda: self.update_search_result())
+        self.search_button.clicked.connect(lambda: self.update_search_result())
+
+        self.nf_label = QLabel("", self.search_view)
+        self.nf_label.move(400, 280)
+        self.nf_label.setStyleSheet("font: 18pt \"MS Shell Dlg 2\"; color: red; "
+                                    "background-color: rgba(255, 255, 255, 0);")
+        self.nf_label.adjustSize()
+
         self.wall.addWidget(self.search_view)
         self.search_but.clicked.connect(lambda: self.wall.setCurrentWidget(self.search_view))
+
         #
         #
 
@@ -304,6 +330,59 @@ class MainApp(QMainWindow):
         self.profile_view_label.move(300, 300)
         self.wall.addWidget(self.profile_view)
         self.profile_but.clicked.connect(lambda: self.wall.setCurrentWidget(self.profile_view))
+
+    def update_search_result(self):
+        self.search_result = movies.find_movies(self.lineEdit_searchbar.text())
+        self.display_search_result()
+
+    def display_search_result(self):
+        if self.search_result:
+            self.nf_label.setText("")
+            self.nf_label.adjustSize()
+            self.clear_buttons()
+            spacer_widget = QWidget()
+            spacer_widget.setFixedHeight(250)
+            spacer_widget.setStyleSheet("background-color: rgba(255, 255, 255, 0);")
+            self.layout.addWidget(spacer_widget)
+            self.layout.setAlignment(Qt.AlignCenter)
+            for movie in self.search_result:
+                title = movie['Title']
+                year = movie['Year']
+                button_text = f"{title} ({year})"
+                button = QPushButton(button_text)
+                button.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+                button.setMaximumWidth(500)
+                button.setStyleSheet("font: 12pt \"MS Shell Dlg 2\"; color: white; "
+                                     "background-color: rgba(255, 255, 255, 0); border: 2px solid white;")
+                self.layout.addWidget(button)
+                button.clicked.connect(lambda checked, movie=movie: self.handle_button_click(movie))
+        else:
+            self.nf_label.setText("Nothing found.")
+            self.nf_label.adjustSize()
+            self.clear_buttons()
+
+    def handle_button_click(self, movie):
+        print("You clicked: ", movie['Title'])
+
+    def clear_buttons(self):
+        while self.layout.count() > 0:
+            item = self.layout.itemAt(0)
+            if isinstance(item.widget(), QPushButton):
+                button = item.widget()
+                self.layout.removeWidget(button)
+                button.deleteLater()
+            else:
+                self.layout.removeItem(item)
+
+
+class MovieSearchTemplate(QPushButton):
+    def __init__(self):
+        super().__init__()
+        self.resize(500, 45)
+        self.move(250, 270)
+        self.setStyleSheet("font: 16pt \"MS Shell Dlg 2\"; color: white; "
+                           "background-color: rgba(255, 255, 255, 0); border: 2px solid white;")
+        # uciąć jeśli za długi tekst
 
 
 app = QApplication(sys.argv)
