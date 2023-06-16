@@ -1,9 +1,11 @@
 import sys
+
+import requests
 from PyQt5 import QtWidgets
 from PyQt5.QtCore import QSize, Qt
-from PyQt5.QtGui import QIcon
+from PyQt5.QtGui import QIcon, QPixmap
 from PyQt5.QtWidgets import QApplication, QWidget, QLabel, QMainWindow, QLineEdit, QPushButton, QVBoxLayout, QShortcut, \
-    QSizePolicy
+    QSizePolicy, QHBoxLayout, QFrame, QGridLayout, QScrollArea
 import database_con
 import hashlib
 import api_functionality
@@ -41,6 +43,7 @@ class LoginWindow(QMainWindow):
         super(LoginWindow, self).__init__()
         self.setGeometry(0, 0, 800, 550)
         auth_widgets.setWindowTitle("Welcome to Filmonator!")
+        auth_widgets.setWindowIcon(QIcon('resources/icons/app_icon.png'))
         self.widget = QWidget()
         self.widget.setGeometry(-1, -1, 801, 551)
         self.widget.setStyleSheet("background-color: qlineargradient(spread:pad, x1:0, y1:0.102, x2:1, "
@@ -227,6 +230,7 @@ class MainApp(QMainWindow):
     def __init__(self):
         self.search_result = None
         super(MainApp, self).__init__()
+        app_widgets.setWindowIcon(QIcon('resources/icons/app_icon.png'))
         app_widgets.setWindowTitle("Filmonator")
         self.layout = QVBoxLayout()
         self.layout.setSpacing(0)
@@ -270,8 +274,9 @@ class MainApp(QMainWindow):
 
         self.wall = QtWidgets.QStackedWidget()
         self.wall.setGeometry(-1, 91, 1000, 650)
-        self.wall.setStyleSheet("background-color: qlineargradient(spread:pad, x1:0, y1:0, x2:0, y2:1, stop:0 rgba("
-                                "0, 0, 0, 255), stop:1 rgba(158, 158, 158, 255))")
+        # self.wall.setStyleSheet("background-color: qlineargradient(spread:pad, x1:0, y1:0, x2:0, y2:1, stop:0 rgba("
+        #                        "0, 0, 0, 255), stop:1 rgba(158, 158, 158, 255))")
+        self.wall.setStyleSheet("background-color: black;")
         self.wall_layout = QVBoxLayout()
         self.wall_layout.addWidget(self.wall, stretch=9)
         self.wall.setLayout(QVBoxLayout())
@@ -279,11 +284,24 @@ class MainApp(QMainWindow):
         self.central_widget.setLayout(self.layout)
         self.setCentralWidget(self.central_widget)
 
-        self.home_view = QWidget()
-        self.home_view_label = QLabel("Home view", self.home_view)
-        self.home_view_label.setStyleSheet("font: 50pt \"MS Shell Dlg 2\"; color: rgb(255, 255, 255); "
-                                           "background-color: rgba(255, 255, 255, 0);")
-        self.home_view_label.move(100, 100)
+        self.home_view = QScrollArea()
+        self.home_view.setWidgetResizable(True)
+        self.home_view.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOn)
+        self.home_view_widget = QWidget()
+        self.home_view_layout = QVBoxLayout(self.home_view_widget)
+        self.home_view_layout.setContentsMargins(0, 0, 0, 0)
+        self.home_view_layout.setSpacing(0)
+        self.home_view.setWidget(self.home_view_widget)
+        self.layout = QVBoxLayout(self.home_view)
+        self.home_view.setLayout(self.layout)
+
+        self.test = MovieTemplate("Shrek", "2001", "jakubgodula", "10/10", "Shrek is a timeless animated gem that combines clever humor, heartwarming moments, and a captivating storyline. With its unforgettable characters, stunning visuals, and an impressive voice cast, it delivers a magical experience for all ages. From the swampy beginning to the fairy-tale ending, Shrek is an absolute delight that continues to enchant audiences.", "https://m.media-amazon.com/images/M/MV5BOGZhM2FhNTItODAzNi00YjA0LWEyN2UtNjJlYWQzYzU1MDg5L2ltYWdlL2ltYWdlXkEyXkFqcGdeQXVyMTQxNzMzNDI@._V1_SX300.jpg")
+        self.home_view_layout.addWidget(self.test)
+        self.test2 = MovieTemplate("Shrek 2", "2004", "jakubgodula", "10/10", "Shrek 2 takes the lovable ogre on another hilarious adventure, packed with even more laughs, memorable characters, and enchanting moments. The film's clever writing, stellar animation, and catchy soundtrack make it a worthy successor. With a perfect blend of comedy and heart, Shrek 2 delivers a delightful and entertaining experience from start to finish.", "https://m.media-amazon.com/images/M/MV5BMDJhMGRjN2QtNDUxYy00NGM3LThjNGQtMmZiZTRhNjM4YzUxL2ltYWdlL2ltYWdlXkEyXkFqcGdeQXVyMTQxNzMzNDI@._V1_SX300.jpg")
+        self.home_view_layout.addWidget(self.test2)
+        self.test2 = MovieTemplate("Shrek the Third", "2007", "jakubgodula", "10/10", "Shrek the Third ventures into new territory with its larger-than-life humor, engaging storyline, and beloved characters. While not as groundbreaking as its predecessors, it still delivers plenty of laughs and heartwarming moments. With stunning visuals, witty dialogue, and a dose of fairy-tale charm, Shrek the Third remains a fun-filled adventure that will entertain fans of all ages.", "https://m.media-amazon.com/images/M/MV5BOTgyMjc3ODk2MV5BMl5BanBnXkFtZTcwMjY0MjEzMw@@._V1_SX300.jpg")
+        self.home_view_layout.addWidget(self.test2)
+
         self.wall.addWidget(self.home_view)
         self.home_but.clicked.connect(lambda: self.wall.setCurrentWidget(self.home_view))
         #
@@ -323,7 +341,7 @@ class MainApp(QMainWindow):
         self.nf_label.adjustSize()
 
         self.wall.addWidget(self.search_view)
-        self.search_but.clicked.connect(lambda: self.wall.setCurrentWidget(self.search_view))
+        self.search_but.clicked.connect(self.show_search_view)
 
         #
         #
@@ -379,15 +397,69 @@ class MainApp(QMainWindow):
             else:
                 self.layout.removeItem(item)
 
+    def show_search_view(self):
+        self.wall.setCurrentWidget(self.search_view)
+        self.lineEdit_searchbar.setFocus()
 
-class MovieSearchTemplate(QPushButton):
-    def __init__(self):
-        super().__init__()
-        self.resize(500, 45)
-        self.move(250, 270)
-        self.setStyleSheet("font: 16pt \"MS Shell Dlg 2\"; color: white; "
-                           "background-color: rgba(255, 255, 255, 0); border: 2px solid white;")
-        # uciąć jeśli za długi tekst
+
+class MovieTemplate(QWidget):
+    def __init__(self, title, year, author, rating, review, poster_path, parent=None):
+        super().__init__(parent)
+        self.title = title
+        self.year = year
+        self.author = author
+        self.rating = rating
+        self.review = review
+        self.poster_path = poster_path
+        self.init()
+
+    def init(self):
+        # Create the main layout
+        main_layout = QHBoxLayout(self)
+
+        # Create the poster widget
+        poster_label = QLabel(self)
+        response = requests.get(self.poster_path)
+        image_data = response.content
+        pixmap = QPixmap()
+        pixmap.loadFromData(image_data)
+        poster_label.setPixmap(pixmap)
+        poster_label.setMaximumSize(300, 447)
+
+        container_widget = QWidget(self)
+        container_widget.setFixedHeight(447)
+
+        container_layout = QGridLayout(container_widget)
+
+        title_label = QLabel(f"\'{self.title}\' ({self.year})")
+        container_layout.addWidget(title_label, 0, 0)
+        title_label.setStyleSheet("font: 18pt \"MS Shell Dlg 2\"; color: white; "
+                                  "background-color: rgba(255, 255, 255, 0); border: 1px solid white;")
+
+        rating_label = QLabel(f"Rating: {self.rating}")
+        container_layout.addWidget(rating_label, 1, 0)
+        rating_label.setStyleSheet("font: 18pt \"MS Shell Dlg 2\"; color: white; "
+                                   "background-color: rgba(255, 255, 255, 0); border: 1px solid white;")
+
+        author_label = QLabel(f"Author: {self.author}")
+        container_layout.addWidget(author_label, 2, 0)
+        author_label.setStyleSheet("font: 18pt \"MS Shell Dlg 2\"; color: white; "
+                                   "background-color: rgba(255, 255, 255, 0); border: 1px solid white;")
+
+        review_label = QLabel(f"Review: \"{self.review}\"")
+        container_layout.addWidget(review_label, 3, 0)
+        review_label.setWordWrap(True)
+        review_label.setAlignment(Qt.AlignJustify)
+        review_label.setStyleSheet("font: 14pt \"MS Shell Dlg 2\"; color: white; "
+                                   "background-color: rgba(255, 255, 255, 0); border: 1px solid white; "
+                                   "word-wrap: break-word; padding-left: 10px; padding-right: 10px; "
+                                   "padding-top: 10px; padding-bottom: 10px")
+
+        main_layout.addWidget(poster_label)
+        main_layout.addWidget(container_widget)
+
+        self.setLayout(main_layout)
+
 
 
 app = QApplication(sys.argv)

@@ -58,3 +58,4 @@ def find_movies(search_input):
     else:
         return None
 
+print(find_movies("Shrek the Third"))
