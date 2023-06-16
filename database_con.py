@@ -3,6 +3,13 @@ import sys
 import logging
 import json
 
+logging.basicConfig(
+    filename='app.log',
+    filemode='w',
+    format='%(name)s - %(levelname)s - %(message)s',
+    level=logging.DEBUG
+)
+
 
 def data_base_connect():
     logging.info("Opening cred file")

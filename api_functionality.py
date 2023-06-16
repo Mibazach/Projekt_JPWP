@@ -1,7 +1,9 @@
 import sys
 import logging
 import json
+import mysql.connector.errors
 import requests
+import database_con
 
 
 def get_movies_req(movie_title):
@@ -25,3 +27,27 @@ def get_movies_req(movie_title):
         sys.exit(3)
     else:
         return response.text
+
+
+def add_movie_to_db(user_id, movie_information_json, rating):
+    try:
+        mydb = database_con.data_base_connect()
+        my_cursor = mydb.cursor()
+        title = movie_information_json['Title']
+        year = movie_information_json['Year']
+        type = movie_information_json['Type']
+        poster = movie_information_json['Poster']
+        query = 'INSERT INTO movies (title, year, type, poster, posted_by, posted_when ,rating)' \
+                ' VALUES (%s, %s, %s, %s, %s, CURRENT_TIMESTAMP, %s)'
+        my_cursor.execute(query, (title, year, type, poster, user_id, rating))
+        mydb.commit()
+        mydb.close()
+    except mysql.connector.errors.DatabaseError:
+        print('cos poszlo nie tak')
+        return 0
+    else:
+        print('dodano recorda')
+        return 1
+
+
+
