@@ -5,6 +5,7 @@ from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import QApplication, QWidget, QLabel, QMainWindow, QLineEdit, QPushButton, QVBoxLayout, QShortcut, \
     QSizePolicy
 import database_con
+import hashlib
 import movies
 
 # TO DO
@@ -15,8 +16,8 @@ import movies
 """
 Zakładam na razie takie dwie tabele z takimi kolumnami:
 
-user: | user_id | login | password | create_time |
-movie: | movie_id | title | year | type | poster | posted_by | 
+users: | user_id | login | password | create_time |
+movies: | movie_id | title | year | type | poster | posted_by | 
 
 """
 
@@ -114,7 +115,7 @@ class LoginWindow(QMainWindow):
             mydb.close()
             if result is not None:
                 stored_password = result[0]
-                if stored_password == password:
+                if stored_password == hashlib.md5(password.encode()).hexdigest():
                     self.label_err.setText("")
                     go_to_main()
             self.label_err.setText("Invalid username or password")
@@ -210,7 +211,10 @@ class RegisterWindow(QMainWindow):
             if (username,) in list_of_users:  # zwraca mi tuple (tupla skurwysyna)
                 self.label_reg_err.setText("This username exists!")
             else:
-                query = "INSERT INTO users (username, password, create_time) VALUES (%s, %s, CURRENT_TIMESTAMP)"
+                password = hashlib.md5(password.encode())
+                password = password.hexdigest()
+                print(password, type(password))
+                query = 'INSERT INTO users (username, password, create_time) VALUES (%s, %s, CURRENT_TIMESTAMP)'
                 my_cursor.execute(query, (username, password))
                 mydb.commit()
                 mydb.close()
