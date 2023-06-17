@@ -1,21 +1,19 @@
 import sys
-
+import mysql.connector.errors
 import requests
 from PyQt5 import QtWidgets
 from PyQt5.QtCore import QSize, Qt
-from PyQt5.QtGui import QIcon, QPixmap, QKeySequence
-from PyQt5.QtWidgets import QApplication, QWidget, QLabel, QMainWindow, QLineEdit, QPushButton, QVBoxLayout, QShortcut,\
-    QSizePolicy, QHBoxLayout, QGridLayout, QScrollArea
-
+from PyQt5.QtGui import QIcon, QPixmap
+from PyQt5.QtWidgets import QApplication, QWidget, QLabel, QMainWindow, QLineEdit, QPushButton, QVBoxLayout, QShortcut, \
+    QSizePolicy, QHBoxLayout, QFrame, QGridLayout, QScrollArea
 import database_con
 import hashlib
 import api_functionality
 
-
 # TO DO
+# three widgets' interfaces
 # too long search result
-# handle_button_click method
-#
+# choose a better colour palette
 
 """
 Zakładam na razie takie dwie tabele z takimi kolumnami:
@@ -25,7 +23,7 @@ movies: | movie_id | title | year | type | poster | posted_by |
 
 """
 
-global user_id
+global actual_logged_user
 
 
 def next_widget():
@@ -44,66 +42,59 @@ def go_to_main():
 class LoginWindow(QMainWindow):
     def __init__(self):
         super(LoginWindow, self).__init__()
-
-        self.username = ""
         self.setGeometry(0, 0, 800, 550)
         auth_widgets.setWindowTitle("Welcome to Filmonator!")
         auth_widgets.setWindowIcon(QIcon('resources/icons/app_icon.png'))
-        #auth_widgets.setWindowFlag(Qt.FramelessWindowHint)
-
         self.widget = QWidget()
         self.widget.setGeometry(-1, -1, 801, 551)
-        # self.widget.setStyleSheet("background-color: qlineargradient(spread:pad, x1:0, y1:0.102, x2:1, "
-        #                           "y2:0.9375, stop:0 rgba(0, 0, 0, 255), stop:1 rgba(158, 158, 158, 255));")
-        self.widget.setStyleSheet("#widget{background-image: url('resources/background.png');}")
-        self.widget.setObjectName("widget")
+        self.widget.setStyleSheet("background-color: qlineargradient(spread:pad, x1:0, y1:0.102, x2:1, "
+                                  "y2:0.9375, stop:0 rgba(0, 0, 0, 255), stop:1 rgba(158, 158, 158, 255));")
         self.setCentralWidget(self.widget)
 
         self.label_title = QLabel("Filmonator", self.widget)
         self.label_title.move(180, 90)
         self.label_title.resize(550, 200)
-        self.label_title.setStyleSheet("color: rgb(0, 0, 0); background-color: rgba(255, 255, 255, 0); font: "
+        self.label_title.setStyleSheet("color: rgb(255, 255, 255); background-color: rgba(255, 255, 255, 0); font: "
                                        "72pt \"Pristina\";")
 
         self.label_username = QLabel("username", self.widget)
         self.label_username.move(213, 268)
         self.label_username.resize(140, 60)
-        self.label_username.setStyleSheet("font: 16pt \"MS Shell Dlg 2\"; color: rgb(0, 0, 0); background-color: "
+        self.label_username.setStyleSheet("font: 16pt \"MS Shell Dlg 2\"; color: rgb(255, 255, 255); background-color: "
                                           "rgba(255, 255, 255, 0);")
         self.lineEdit_username = QLineEdit(self.widget)
         self.lineEdit_username.move(340, 280)
         self.lineEdit_username.resize(221, 45)
         self.lineEdit_username.setStyleSheet(u"background-color: rgba(255, 255, 255, 0);\n"
                                              "font: 11pt \"MS Shell Dlg 2\";\n"
-                                             "color: rgb(0, 0, 0);")
+                                             "color: rgb(255, 255, 255);")
 
         self.label_pass = QLabel("password", self.widget)
         self.label_pass.move(215, 338)
         self.label_pass.resize(140, 41)
-        self.label_pass.setStyleSheet("font: 16pt \"MS Shell Dlg 2\"; color: rgb(0, 0, 0); background-color: "
+        self.label_pass.setStyleSheet("font: 16pt \"MS Shell Dlg 2\"; color: rgb(255, 255, 255); background-color: "
                                       "rgba(255, 255, 255, 0);")
         self.lineEdit_pass = QLineEdit(self.widget)
         self.lineEdit_pass.move(340, 340)
         self.lineEdit_pass.resize(221, 41)
         self.lineEdit_pass.setStyleSheet("background-color: rgba(255, 255, 255, 0);\n"
                                          "font: 11pt \"MS Shell Dlg 2\";\n"
-                                         "color: rgb(0, 0, 0);")
+                                         "color: rgb(255, 255, 255);")
         self.lineEdit_pass.setEchoMode(QtWidgets.QLineEdit.Password)  # kropeczki
 
         self.login_button = QPushButton("log in", self.widget)
         self.login_button.move(400, 420)
         self.login_button.resize(93, 28)
-        self.login_button.setStyleSheet("background-color: rgb(255, 255, 255, 0); color: rgb(0, 0, 0); "
-                                        "border-radius: 7px; border: 1px solid white; ")
+        self.login_button.setStyleSheet("background-color: rgb(255, 255, 255, 0); color: rgb(255, 255, "
+                                        "255); border-radius: 7px; border: 1px solid white; ")
         enter = QShortcut(Qt.Key_Return, self.login_button)
-        self.username_passed = ""
         enter.activated.connect(self.login_auth)
         self.login_button.clicked.connect(self.login_auth)
         self.no_account_button = QPushButton("no account? click here to create one", self.widget)
-        self.no_account_button.move(55, 515)
+        self.no_account_button.move(-20, 515)
         self.no_account_button.resize(280, 28)
-        self.no_account_button.setStyleSheet("background-color: rgb(255, 255, 255, 0); color: rgb(0, 0, 0); "
-                                             "text-decoration: underline;")
+        self.no_account_button.setStyleSheet("background-color: rgb(255, 255, 255, 0); color: rgb(255, 255, "
+                                             "255); text-decoration: underline;")
         self.no_account_button.clicked.connect(next_widget)
 
         self.label_err = QLabel("", self.widget)
@@ -111,22 +102,19 @@ class LoginWindow(QMainWindow):
         self.label_err.resize(250, 28)
         self.label_err.setStyleSheet("font: 10pt \"MS Shell Dlg 2\"; color: red; background-color: "
                                      "rgba(255, 255, 255, 0);")
-        shortcut = QShortcut(QKeySequence(Qt.Key_Escape), self)
-        shortcut.activated.connect(self.close_application)
 
     def login_auth(self):
-        self.username = self.lineEdit_username.text()
+        username = self.lineEdit_username.text()
         password = self.lineEdit_pass.text()
-        if len(self.username) == 0 and len(password) == 0:
+        if len(username) == 0 and len(password) == 0:
             self.label_err.setText("The fields are empty")
-        elif len(self.username) == 0 or len(password) == 0:
+        elif len(username) == 0 or len(password) == 0:
             self.label_err.setText("One of the fields is empty")
 
         else:
             mydb = database_con.data_base_connect()
             my_cursor = mydb.cursor()
-            uname = f'"{self.username}"'
-            xusernamex = self.username
+            uname = f'"{username}"'
             my_cursor.execute(f'SELECT password FROM users WHERE username = {uname}')
             result = my_cursor.fetchone()
             mydb.close()
@@ -134,16 +122,10 @@ class LoginWindow(QMainWindow):
                 stored_password = result[0]
                 if stored_password == hashlib.md5(password.encode()).hexdigest():
                     self.label_err.setText("")
+                    actual_logged_user = username
                     go_to_main()
             self.label_err.setText("Invalid username or password")
             self.lineEdit_pass.setText("")
-            print(xusernamex)
-            self.username_passed = xusernamex
-            main_scr = MainApp(self.username_passed)
-            app_widgets.addWidget(main_scr)
-
-    def close_application(self):
-        auth_widgets.close()
 
 
 class RegisterWindow(QMainWindow):
@@ -153,46 +135,46 @@ class RegisterWindow(QMainWindow):
 
         self.widget = QWidget()
         self.widget.setGeometry(-1, -1, 801, 551)
-        self.widget.setStyleSheet("#widget{background-image: url('resources/background.png');}")
-        self.widget.setObjectName("widget")
+        self.widget.setStyleSheet("background-color: qlineargradient(spread:pad, x1:0, y1:0.102, x2:1, "
+                                  "y2:0.9375, stop:0 rgba(0, 0, 0, 255), stop:1 rgba(158, 158, 158, 255));")
         self.setCentralWidget(self.widget)
 
         self.label_title = QLabel("Create a new Filmonator account!", self.widget)
         self.label_title.move(180, 110)
         self.label_title.resize(600, 40)
-        self.label_title.setStyleSheet("font: 20pt \"MS Shell Dlg 2\"; color: rgb(0, 0, 0); background-color: "
+        self.label_title.setStyleSheet("font: 20pt \"MS Shell Dlg 2\"; color: rgb(255, 255, 255); background-color: "
                                        "rgba(255, 255, 255, 0);")
 
         self.label_reg_username = QLabel("username", self.widget)
         self.label_reg_username.move(237, 200)
         self.label_reg_username.resize(121, 60)
         self.label_reg_username.setStyleSheet(
-            "font: 16pt \"MS Shell Dlg 2\"; color: rgb(0, 0, 0); background-color: "
+            "font: 16pt \"MS Shell Dlg 2\"; color: rgb(255, 255, 255); background-color: "
             "rgba(255, 255, 255, 0);")
         self.lineEdit_reg_username = QLineEdit(self.widget)
         self.lineEdit_reg_username.move(370, 210)
         self.lineEdit_reg_username.resize(221, 41)
         self.lineEdit_reg_username.setStyleSheet(u"background-color: rgba(255, 255, 255, 0);\n"
                                                  "font: 11pt \"MS Shell Dlg 2\";\n"
-                                                 "color: rgb(0, 0, 0);")
+                                                 "color: rgb(255, 255, 255);")
 
         self.label_reg_pass = QLabel("password", self.widget)
         self.label_reg_pass.move(240, 260)
         self.label_reg_pass.resize(121, 60)
-        self.label_reg_pass.setStyleSheet("font: 16pt \"MS Shell Dlg 2\"; color: rgb(0, 0, 0); background-color: "
+        self.label_reg_pass.setStyleSheet("font: 16pt \"MS Shell Dlg 2\"; color: rgb(255, 255, 255); background-color: "
                                           "rgba(255, 255, 255, 0);")
         self.lineEdit_reg_pass = QLineEdit(self.widget)
         self.lineEdit_reg_pass.move(370, 270)
         self.lineEdit_reg_pass.resize(221, 41)
         self.lineEdit_reg_pass.setStyleSheet("background-color: rgba(255, 255, 255, 0);\n"
                                              "font: 11pt \"MS Shell Dlg 2\";\n"
-                                             "color: rgb(0, 0, 0);")
+                                             "color: rgb(255, 255, 255);")
         self.lineEdit_reg_pass.setEchoMode(QtWidgets.QLineEdit.Password)  # kropeczki
 
         self.reg_button = QPushButton("register", self.widget)
         self.reg_button.move(430, 360)
         self.reg_button.resize(100, 30)
-        self.reg_button.setStyleSheet("background-color: rgb(255, 255, 255, 0); color: rgb(0, 0, 0); "
+        self.reg_button.setStyleSheet("background-color: rgb(255, 255, 255, 0); color: rgb(255, 255, 255); "
                                       "border-radius: 7px; border: 1px solid white; font: 10pt \"MS Shell Dlg 2\"")
         self.reg_button.clicked.connect(self.reg_auth)
 
@@ -203,10 +185,10 @@ class RegisterWindow(QMainWindow):
                                          "rgba(255, 255, 255, 0);")
 
         self.back_to_login_button = QPushButton("back to logging in", self.widget)
-        self.back_to_login_button.move(93, 515)
+        self.back_to_login_button.move(18, 515)
         self.back_to_login_button.resize(100, 28)
-        self.back_to_login_button.setStyleSheet("background-color: rgb(255, 255, 255, 0); color: rgb(0, 0, 0); "
-                                                "text-decoration: underline;")
+        self.back_to_login_button.setStyleSheet("background-color: rgb(255, 255, 255, 0); color: rgb(255, 255, "
+                                                "255); text-decoration: underline;")
         self.back_to_login_button.clicked.connect(prev_widget)
 
         self.label_reg_success = QLabel("", self.widget)
@@ -214,8 +196,6 @@ class RegisterWindow(QMainWindow):
         self.label_reg_success.resize(250, 28)
         self.label_reg_success.setStyleSheet("font: 10pt \"MS Shell Dlg 2\"; color: green; background-color: "
                                              "rgba(255, 255, 255, 0);")
-        shortcut = QShortcut(QKeySequence(Qt.Key_Escape), self)
-        shortcut.activated.connect(self.back_to_login)
 
     def reg_auth(self):
         username = self.lineEdit_reg_username.text()
@@ -247,23 +227,17 @@ class RegisterWindow(QMainWindow):
                 self.label_reg_err.clear()
                 self.label_reg_success.setText("You registered successfully")
 
-    def back_to_login(self):
-        auth_widgets.setCurrentIndex(auth_widgets.currentIndex() - 1)
-
-
 
 class MainApp(QMainWindow):
-    def __init__(self, username):
+    def __init__(self):
         self.search_result = None
         super(MainApp, self).__init__()
-        app_widgets.setWindowTitle("Filmonator")
         app_widgets.setWindowIcon(QIcon('resources/icons/app_icon.png'))
-
+        app_widgets.setWindowTitle("Filmonator")
         self.layout = QVBoxLayout()
         self.layout.setSpacing(0)
         self.layout.setContentsMargins(0, 0, 0, 0)
         self.central_widget = QWidget()
-        self.username = username
 
         self.bar = QWidget()
         self.bar.setGeometry(-1, -1, 1000, 100)
@@ -322,14 +296,8 @@ class MainApp(QMainWindow):
         self.home_view.setWidget(self.home_view_widget)
         self.layout = QVBoxLayout(self.home_view)
         self.home_view.setLayout(self.layout)
-        self.home_view.setVerticalScrollBarPolicy(1)
 
-        self.test = MovieTemplate("Shrek", "2001", "jakubgodula", "10/10", "Shrek is a timeless animated gem that combines clever humor, heartwarming moments, and a captivating storyline. With its unforgettable characters, stunning visuals, and an impressive voice cast, it delivers a magical experience for all ages. From the swampy beginning to the fairy-tale ending, Shrek is an absolute delight that continues to enchant audiences.", "https://m.media-amazon.com/images/M/MV5BOGZhM2FhNTItODAzNi00YjA0LWEyN2UtNjJlYWQzYzU1MDg5L2ltYWdlL2ltYWdlXkEyXkFqcGdeQXVyMTQxNzMzNDI@._V1_SX300.jpg")
-        self.home_view_layout.addWidget(self.test)
-        self.test2 = MovieTemplate("Shrek 2", "2004", "jakubgodula", "10/10", "Shrek 2 takes the lovable ogre on another hilarious adventure, packed with even more laughs, memorable characters, and enchanting moments. The film's clever writing, stellar animation, and catchy soundtrack make it a worthy successor. With a perfect blend of comedy and heart, Shrek 2 delivers a delightful and entertaining experience from start to finish.", "https://m.media-amazon.com/images/M/MV5BMDJhMGRjN2QtNDUxYy00NGM3LThjNGQtMmZiZTRhNjM4YzUxL2ltYWdlL2ltYWdlXkEyXkFqcGdeQXVyMTQxNzMzNDI@._V1_SX300.jpg")
-        self.home_view_layout.addWidget(self.test2)
-        self.test2 = MovieTemplate("Shrek the Third", "2007", "jakubgodula", "10/10", "Shrek the Third ventures into new territory with its larger-than-life humor, engaging storyline, and beloved characters. While not as groundbreaking as its predecessors, it still delivers plenty of laughs and heartwarming moments. With stunning visuals, witty dialogue, and a dose of fairy-tale charm, Shrek the Third remains a fun-filled adventure that will entertain fans of all ages.", "https://m.media-amazon.com/images/M/MV5BOTgyMjc3ODk2MV5BMl5BanBnXkFtZTcwMjY0MjEzMw@@._V1_SX300.jpg")
-        self.home_view_layout.addWidget(self.test2)
+        self.show_all_saved_movies()
 
         self.wall.addWidget(self.home_view)
         self.home_but.clicked.connect(lambda: self.wall.setCurrentWidget(self.home_view))
@@ -375,37 +343,17 @@ class MainApp(QMainWindow):
         #
         #
 
-        self.profile_view = QScrollArea()
-        self.profile_view.setWidgetResizable(True)
-        self.profile_view.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOn)
-        self.profile_view_widget = QWidget()
-        self.profile_view_layout = QVBoxLayout(self.profile_view_widget)
-        self.profile_view_layout.setContentsMargins(0, 0, 0, 0)
-        self.profile_view_layout.setSpacing(0)
-        self.profile_view.setWidget(self.profile_view_widget)
-
-        self.label_myprof = QLabel(" Welcome to your profile, " + self.username + "!", self.profile_view_widget)
-        self.label_myprof.setStyleSheet("font: 24pt \"MS Shell Dlg 2\"; color: white; "
-                                        "background-color: rgba(255, 255, 255, 0);")
-        self.label_myprof.adjustSize()
-
-        self.profile_view_layout.addWidget(self.label_myprof)
-
-        self.testprof = MovieTemplate("Shrek", "2001", "jakubgodula", "10/10", "Shrek is a timeless animated gem that combines clever humor, heartwarming moments, and a captivating storyline. With its unforgettable characters, stunning visuals, and an impressive voice cast, it delivers a magical experience for all ages. From the swampy beginning to the fairy-tale ending, Shrek is an absolute delight that continues to enchant audiences.", "https://m.media-amazon.com/images/M/MV5BOGZhM2FhNTItODAzNi00YjA0LWEyN2UtNjJlYWQzYzU1MDg5L2ltYWdlL2ltYWdlXkEyXkFqcGdeQXVyMTQxNzMzNDI@._V1_SX300.jpg")
-        self.profile_view_layout.addWidget(self.testprof)
-        self.testprof2 = MovieTemplate("Shrek 2", "2004", "jakubgodula", "10/10", "Shrek 2 takes the lovable ogre on another hilarious adventure, packed with even more laughs, memorable characters, and enchanting moments. The film's clever writing, stellar animation, and catchy soundtrack make it a worthy successor. With a perfect blend of comedy and heart, Shrek 2 delivers a delightful and entertaining experience from start to finish.", "https://m.media-amazon.com/images/M/MV5BMDJhMGRjN2QtNDUxYy00NGM3LThjNGQtMmZiZTRhNjM4YzUxL2ltYWdlL2ltYWdlXkEyXkFqcGdeQXVyMTQxNzMzNDI@._V1_SX300.jpg")
-        self.profile_view_layout.addWidget(self.testprof2)
-        self.testprof3 = MovieTemplate("Shrek the Third", "2007", "jakubgodula", "10/10", "Shrek the Third ventures into new territory with its larger-than-life humor, engaging storyline, and beloved characters. While not as groundbreaking as its predecessors, it still delivers plenty of laughs and heartwarming moments. With stunning visuals, witty dialogue, and a dose of fairy-tale charm, Shrek the Third remains a fun-filled adventure that will entertain fans of all ages.", "https://m.media-amazon.com/images/M/MV5BOTgyMjc3ODk2MV5BMl5BanBnXkFtZTcwMjY0MjEzMw@@._V1_SX300.jpg")
-        self.profile_view_layout.addWidget(self.testprof3)
-
+        self.profile_view = QWidget()
+        self.profile_view_label = QLabel("Profile view", self.profile_view)
+        self.profile_view_label.setStyleSheet("font: 50pt \"MS Shell Dlg 2\"; color: rgb(255, 255, 255); "
+                                              "background-color: rgba(255, 255, 255, 0);")
+        self.profile_view_label.move(300, 300)
         self.wall.addWidget(self.profile_view)
         self.profile_but.clicked.connect(lambda: self.wall.setCurrentWidget(self.profile_view))
 
-        shortcut = QShortcut(QKeySequence(Qt.Key_Escape), self)
-        shortcut.activated.connect(self.close_application)
-
     def update_search_result(self):
         self.search_result = api_functionality.find_movies(self.lineEdit_searchbar.text())
+        print("ddddd")
         self.display_search_result()
 
     def display_search_result(self):
@@ -428,14 +376,14 @@ class MainApp(QMainWindow):
                 button.setStyleSheet("font: 12pt \"MS Shell Dlg 2\"; color: white; "
                                      "background-color: rgba(255, 255, 255, 0); border: 2px solid white;")
                 self.layout.addWidget(button)
-                button.clicked.connect(lambda checked, moviee=movie: self.handle_button_click(moviee))
+                button.clicked.connect(lambda checked, movie=movie: self.handle_button_click(movie))
         else:
             self.nf_label.setText("Nothing found.")
             self.nf_label.adjustSize()
             self.clear_buttons()
 
     def handle_button_click(self, movie):
-        print("You clicked: ", movie['Title'])
+        print("You clicked: ", movie)
 
     def clear_buttons(self):
         while self.layout.count() > 0:
@@ -451,8 +399,23 @@ class MainApp(QMainWindow):
         self.wall.setCurrentWidget(self.search_view)
         self.lineEdit_searchbar.setFocus()
 
-    def close_application(self):
-        app_widgets.close()
+    def show_all_saved_movies(self):
+        try:
+            mydb = database_con.data_base_connect()
+            my_cursor = mydb.cursor()
+            my_cursor.execute('SELECT * FROM movies')
+            list_of_movies = my_cursor.fetchall()
+            print(list_of_movies, type(list_of_movies))
+            for movie in list_of_movies:
+                title = movie[1]
+                year = movie[2]
+                poster_path = movie[4]
+                author = movie[5]
+                rating = movie[7]
+                review = movie[8]
+                self.home_view_layout.addWidget(MovieTemplate(title, year, author, rating, review, poster_path))
+        except mysql.connector.errors.DatabaseError:
+            print('Coś poszło nie tak z wyświetlaniem...')
 
 
 class MovieTemplate(QWidget):
@@ -514,6 +477,7 @@ class MovieTemplate(QWidget):
         self.setLayout(main_layout)
 
 
+
 app = QApplication(sys.argv)
 auth_widgets = QtWidgets.QStackedWidget()
 auth_widgets.setFixedWidth(800)
@@ -524,12 +488,13 @@ log_scr = LoginWindow()
 auth_widgets.addWidget(log_scr)
 reg_scr = RegisterWindow()
 auth_widgets.addWidget(reg_scr)
-auth_widgets.setWindowFlag(Qt.FramelessWindowHint)
 
 app_widgets = QtWidgets.QStackedWidget()
-app_widgets.setWindowFlag(Qt.FramelessWindowHint)
 app_widgets.setFixedWidth(1000)
 app_widgets.setFixedHeight(750)
 auth_widgets.show()
+
+main_scr = MainApp()
+app_widgets.addWidget(main_scr)
 
 sys.exit(app.exec_())

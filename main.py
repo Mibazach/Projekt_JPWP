@@ -10,7 +10,7 @@ logging.basicConfig(
     level=logging.DEBUG
 )
 
-
+# api_functionality.show_all_saved_movies()
 
 """
 Zakładam na razie takie dwie tabele z takimi kolumnami:

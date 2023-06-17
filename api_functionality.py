@@ -29,7 +29,7 @@ def get_movies_req(movie_title):
         return response.text
 
 
-def add_movie_to_db(user_id, movie_information_json, rating):
+def add_movie_to_db(username, movie_information_json, rating, review):
     try:
         mydb = database_con.data_base_connect()
         my_cursor = mydb.cursor()
@@ -37,9 +37,9 @@ def add_movie_to_db(user_id, movie_information_json, rating):
         year = movie_information_json['Year']
         type = movie_information_json['Type']
         poster = movie_information_json['Poster']
-        query = 'INSERT INTO movies (title, year, type, poster, posted_by, posted_when ,rating)' \
+        query = 'INSERT INTO movies (title, year, type, poster, posted_by, posted_when ,rating, review)' \
                 ' VALUES (%s, %s, %s, %s, %s, CURRENT_TIMESTAMP, %s)'
-        my_cursor.execute(query, (title, year, type, poster, user_id, rating))
+        my_cursor.execute(query, (title, year, type, poster, username, rating, review))
         mydb.commit()
         mydb.close()
     except mysql.connector.errors.DatabaseError:
@@ -58,4 +58,6 @@ def find_movies(search_input):
     else:
         return None
 
+
 print(find_movies("Shrek the Third"))
+
