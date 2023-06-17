@@ -23,7 +23,7 @@ movies: | movie_id | title | year | type | poster | posted_by |
 
 """
 
-global actual_logged_user
+global current_logged_user
 
 
 def next_widget():
@@ -122,7 +122,7 @@ class LoginWindow(QMainWindow):
                 stored_password = result[0]
                 if stored_password == hashlib.md5(password.encode()).hexdigest():
                     self.label_err.setText("")
-                    actual_logged_user = username
+                    current_logged_user = uname
                     go_to_main()
             self.label_err.setText("Invalid username or password")
             self.lineEdit_pass.setText("")
@@ -383,7 +383,8 @@ class MainApp(QMainWindow):
             self.clear_buttons()
 
     def handle_button_click(self, movie):
-        print("You clicked: ", movie)
+        print("You clicked: ", movie['Title'], type(movie))
+        self.show_all_movie_by_title(movie['Title'])
 
     def clear_buttons(self):
         while self.layout.count() > 0:
@@ -417,6 +418,50 @@ class MainApp(QMainWindow):
         except mysql.connector.errors.DatabaseError:
             print('Coś poszło nie tak z wyświetlaniem...')
 
+    def show_all_movie_by_title(self, title):
+        try:
+            title = f"'{title}'"
+            mydb = database_con.data_base_connect()
+            my_cursor = mydb.cursor()
+            my_cursor.execute(f'SELECT * FROM movies WHERE title = {title}')
+            list_of_movies = my_cursor.fetchall()
+            mydb.close()
+            if len(list_of_movies) == 0:
+                print('No user added that movie to their profile! ...yet.')
+                return
+            print(list_of_movies, type(list_of_movies))
+            for movie in list_of_movies:
+                title = movie[1]
+                year = movie[2]
+                poster_path = movie[4]
+                author = movie[5]
+                rating = movie[7]
+                review = movie[8]
+                self.home_view_layout.addWidget(MovieTemplate(title, year, author, rating, review, poster_path))
+        except mysql.connector.errors.DatabaseError:
+            print('Coś poszło nie tak z wyświetlaniem DDDDD...')
+
+    def show_all_user_current_user_movies(self):
+        try:
+            mydb = database_con.data_base_connect()
+            my_cursor = mydb.cursor()
+            my_cursor.execute(f'SELECT * FROM movies WHERE title = {current_logged_user}')
+            list_of_movies = my_cursor.fetchall()
+            mydb.close()
+            if len(list_of_movies) == 0:
+                print('Nothing to see here... yet.')
+                return
+            print(list_of_movies, type(list_of_movies))
+            for movie in list_of_movies:
+                title = movie[1]
+                year = movie[2]
+                poster_path = movie[4]
+                author = movie[5]
+                rating = movie[7]
+                review = movie[8]
+                self.home_view_layout.addWidget(MovieTemplate(title, year, author, rating, review, poster_path))
+        except mysql.connector.errors.DatabaseError:
+            print('Coś poszło nie tak z wyświetlaniem DDDDD...')
 
 class MovieTemplate(QWidget):
     def __init__(self, title, year, author, rating, review, poster_path, parent=None):
