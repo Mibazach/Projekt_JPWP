@@ -111,6 +111,8 @@ class LoginWindow(QMainWindow):
         self.label_err.resize(250, 28)
         self.label_err.setStyleSheet("font: 10pt \"MS Shell Dlg 2\"; color: red; background-color: "
                                      "rgba(255, 255, 255, 0);")
+        shortcut = QShortcut(QKeySequence(Qt.Key_Escape), self)
+        shortcut.activated.connect(self.close_application)
 
     def login_auth(self):
         self.username = self.lineEdit_username.text()
@@ -139,6 +141,9 @@ class LoginWindow(QMainWindow):
             self.username_passed = xusernamex
             main_scr = MainApp(self.username_passed)
             app_widgets.addWidget(main_scr)
+
+    def close_application(self):
+        auth_widgets.close()
 
 
 class RegisterWindow(QMainWindow):
@@ -209,6 +214,8 @@ class RegisterWindow(QMainWindow):
         self.label_reg_success.resize(250, 28)
         self.label_reg_success.setStyleSheet("font: 10pt \"MS Shell Dlg 2\"; color: green; background-color: "
                                              "rgba(255, 255, 255, 0);")
+        shortcut = QShortcut(QKeySequence(Qt.Key_Escape), self)
+        shortcut.activated.connect(self.back_to_login)
 
     def reg_auth(self):
         username = self.lineEdit_reg_username.text()
@@ -239,6 +246,10 @@ class RegisterWindow(QMainWindow):
                 mydb.close()
                 self.label_reg_err.clear()
                 self.label_reg_success.setText("You registered successfully")
+
+    def back_to_login(self):
+        auth_widgets.setCurrentIndex(auth_widgets.currentIndex() - 1)
+
 
 
 class MainApp(QMainWindow):
