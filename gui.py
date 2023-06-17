@@ -3,9 +3,9 @@ import mysql.connector.errors
 import requests
 from PyQt5 import QtWidgets
 from PyQt5.QtCore import QSize, Qt
-from PyQt5.QtGui import QIcon, QPixmap
+from PyQt5.QtGui import QIcon, QPixmap, QKeySequence
 from PyQt5.QtWidgets import QApplication, QWidget, QLabel, QMainWindow, QLineEdit, QPushButton, QVBoxLayout, QShortcut, \
-    QSizePolicy, QHBoxLayout, QFrame, QGridLayout, QScrollArea
+    QSizePolicy, QHBoxLayout, QGridLayout, QScrollArea
 import database_con
 import hashlib
 import api_functionality
@@ -47,54 +47,54 @@ class LoginWindow(QMainWindow):
         auth_widgets.setWindowIcon(QIcon('resources/icons/app_icon.png'))
         self.widget = QWidget()
         self.widget.setGeometry(-1, -1, 801, 551)
-        self.widget.setStyleSheet("background-color: qlineargradient(spread:pad, x1:0, y1:0.102, x2:1, "
-                                  "y2:0.9375, stop:0 rgba(0, 0, 0, 255), stop:1 rgba(158, 158, 158, 255));")
+        self.widget.setStyleSheet("#widget{background-image: url('resources/background.png');}")
+        self.widget.setObjectName("widget")
         self.setCentralWidget(self.widget)
 
         self.label_title = QLabel("Filmonator", self.widget)
         self.label_title.move(180, 90)
         self.label_title.resize(550, 200)
-        self.label_title.setStyleSheet("color: rgb(255, 255, 255); background-color: rgba(255, 255, 255, 0); font: "
+        self.label_title.setStyleSheet("color: rgb(0, 0, 0); background-color: rgba(255, 255, 255, 0); font: "
                                        "72pt \"Pristina\";")
 
         self.label_username = QLabel("username", self.widget)
         self.label_username.move(213, 268)
         self.label_username.resize(140, 60)
-        self.label_username.setStyleSheet("font: 16pt \"MS Shell Dlg 2\"; color: rgb(255, 255, 255); background-color: "
+        self.label_username.setStyleSheet("font: 16pt \"MS Shell Dlg 2\"; color: rgb(0, 0, 0); background-color: "
                                           "rgba(255, 255, 255, 0);")
         self.lineEdit_username = QLineEdit(self.widget)
         self.lineEdit_username.move(340, 280)
         self.lineEdit_username.resize(221, 45)
         self.lineEdit_username.setStyleSheet(u"background-color: rgba(255, 255, 255, 0);\n"
                                              "font: 11pt \"MS Shell Dlg 2\";\n"
-                                             "color: rgb(255, 255, 255);")
+                                             "color: rgb(0, 0, 0);")
 
         self.label_pass = QLabel("password", self.widget)
         self.label_pass.move(215, 338)
         self.label_pass.resize(140, 41)
-        self.label_pass.setStyleSheet("font: 16pt \"MS Shell Dlg 2\"; color: rgb(255, 255, 255); background-color: "
+        self.label_pass.setStyleSheet("font: 16pt \"MS Shell Dlg 2\"; color: rgb(0, 0, 0); background-color: "
                                       "rgba(255, 255, 255, 0);")
         self.lineEdit_pass = QLineEdit(self.widget)
         self.lineEdit_pass.move(340, 340)
         self.lineEdit_pass.resize(221, 41)
         self.lineEdit_pass.setStyleSheet("background-color: rgba(255, 255, 255, 0);\n"
                                          "font: 11pt \"MS Shell Dlg 2\";\n"
-                                         "color: rgb(255, 255, 255);")
+                                         "color: rgb(0, 0, 0);")
         self.lineEdit_pass.setEchoMode(QtWidgets.QLineEdit.Password)  # kropeczki
 
         self.login_button = QPushButton("log in", self.widget)
         self.login_button.move(400, 420)
         self.login_button.resize(93, 28)
-        self.login_button.setStyleSheet("background-color: rgb(255, 255, 255, 0); color: rgb(255, 255, "
-                                        "255); border-radius: 7px; border: 1px solid white; ")
+        self.login_button.setStyleSheet("background-color: rgb(255, 255, 255, 0); color: rgb(0, 0, "
+                                        "0); border-radius: 7px; border: 1px solid white; ")
         enter = QShortcut(Qt.Key_Return, self.login_button)
         enter.activated.connect(self.login_auth)
         self.login_button.clicked.connect(self.login_auth)
         self.no_account_button = QPushButton("no account? click here to create one", self.widget)
-        self.no_account_button.move(-20, 515)
+        self.no_account_button.move(55, 515)
         self.no_account_button.resize(280, 28)
-        self.no_account_button.setStyleSheet("background-color: rgb(255, 255, 255, 0); color: rgb(255, 255, "
-                                             "255); text-decoration: underline;")
+        self.no_account_button.setStyleSheet("background-color: rgb(255, 255, 255, 0); color: rgb(0, 0, "
+                                             "0); text-decoration: underline;")
         self.no_account_button.clicked.connect(next_widget)
 
         self.label_err = QLabel("", self.widget)
@@ -102,6 +102,8 @@ class LoginWindow(QMainWindow):
         self.label_err.resize(250, 28)
         self.label_err.setStyleSheet("font: 10pt \"MS Shell Dlg 2\"; color: red; background-color: "
                                      "rgba(255, 255, 255, 0);")
+        shortcut = QShortcut(QKeySequence(Qt.Key_Escape), self)
+        shortcut.activated.connect(self.close_application)
 
     def login_auth(self):
         username = self.lineEdit_username.text()
@@ -127,6 +129,8 @@ class LoginWindow(QMainWindow):
             self.label_err.setText("Invalid username or password")
             self.lineEdit_pass.setText("")
 
+    def close_application(self):
+        auth_widgets.close()
 
 class RegisterWindow(QMainWindow):
     def __init__(self):
@@ -142,39 +146,39 @@ class RegisterWindow(QMainWindow):
         self.label_title = QLabel("Create a new Filmonator account!", self.widget)
         self.label_title.move(180, 110)
         self.label_title.resize(600, 40)
-        self.label_title.setStyleSheet("font: 20pt \"MS Shell Dlg 2\"; color: rgb(255, 255, 255); background-color: "
+        self.label_title.setStyleSheet("font: 20pt \"MS Shell Dlg 2\"; color: rgb(0, 0, 0); background-color: "
                                        "rgba(255, 255, 255, 0);")
 
         self.label_reg_username = QLabel("username", self.widget)
         self.label_reg_username.move(237, 200)
         self.label_reg_username.resize(121, 60)
         self.label_reg_username.setStyleSheet(
-            "font: 16pt \"MS Shell Dlg 2\"; color: rgb(255, 255, 255); background-color: "
+            "font: 16pt \"MS Shell Dlg 2\"; color: rgb(0, 0, 0); background-color: "
             "rgba(255, 255, 255, 0);")
         self.lineEdit_reg_username = QLineEdit(self.widget)
         self.lineEdit_reg_username.move(370, 210)
         self.lineEdit_reg_username.resize(221, 41)
         self.lineEdit_reg_username.setStyleSheet(u"background-color: rgba(255, 255, 255, 0);\n"
                                                  "font: 11pt \"MS Shell Dlg 2\";\n"
-                                                 "color: rgb(255, 255, 255);")
+                                                 "color: rgb(0, 0, 0);")
 
         self.label_reg_pass = QLabel("password", self.widget)
         self.label_reg_pass.move(240, 260)
         self.label_reg_pass.resize(121, 60)
-        self.label_reg_pass.setStyleSheet("font: 16pt \"MS Shell Dlg 2\"; color: rgb(255, 255, 255); background-color: "
+        self.label_reg_pass.setStyleSheet("font: 16pt \"MS Shell Dlg 2\"; color: rgb(0, 0, 0); background-color: "
                                           "rgba(255, 255, 255, 0);")
         self.lineEdit_reg_pass = QLineEdit(self.widget)
         self.lineEdit_reg_pass.move(370, 270)
         self.lineEdit_reg_pass.resize(221, 41)
         self.lineEdit_reg_pass.setStyleSheet("background-color: rgba(255, 255, 255, 0);\n"
                                              "font: 11pt \"MS Shell Dlg 2\";\n"
-                                             "color: rgb(255, 255, 255);")
+                                             "color: rgb(0, 0, 0);")
         self.lineEdit_reg_pass.setEchoMode(QtWidgets.QLineEdit.Password)  # kropeczki
 
         self.reg_button = QPushButton("register", self.widget)
         self.reg_button.move(430, 360)
         self.reg_button.resize(100, 30)
-        self.reg_button.setStyleSheet("background-color: rgb(255, 255, 255, 0); color: rgb(255, 255, 255); "
+        self.reg_button.setStyleSheet("background-color: rgb(255, 255, 255, 0); color: rgb(0, 0, 0); "
                                       "border-radius: 7px; border: 1px solid white; font: 10pt \"MS Shell Dlg 2\"")
         self.reg_button.clicked.connect(self.reg_auth)
 
@@ -185,10 +189,10 @@ class RegisterWindow(QMainWindow):
                                          "rgba(255, 255, 255, 0);")
 
         self.back_to_login_button = QPushButton("back to logging in", self.widget)
-        self.back_to_login_button.move(18, 515)
+        self.back_to_login_button.move(93, 515)
         self.back_to_login_button.resize(100, 28)
-        self.back_to_login_button.setStyleSheet("background-color: rgb(255, 255, 255, 0); color: rgb(255, 255, "
-                                                "255); text-decoration: underline;")
+        self.back_to_login_button.setStyleSheet("background-color: rgb(255, 255, 255, 0); color: rgb(0, 0, "
+                                                "0); text-decoration: underline;")
         self.back_to_login_button.clicked.connect(prev_widget)
 
         self.label_reg_success = QLabel("", self.widget)
@@ -196,6 +200,8 @@ class RegisterWindow(QMainWindow):
         self.label_reg_success.resize(250, 28)
         self.label_reg_success.setStyleSheet("font: 10pt \"MS Shell Dlg 2\"; color: green; background-color: "
                                              "rgba(255, 255, 255, 0);")
+        shortcut = QShortcut(QKeySequence(Qt.Key_Escape), self)
+        shortcut.activated.connect(self.back_to_login)
 
     def reg_auth(self):
         username = self.lineEdit_reg_username.text()
@@ -226,6 +232,9 @@ class RegisterWindow(QMainWindow):
                 mydb.close()
                 self.label_reg_err.clear()
                 self.label_reg_success.setText("You registered successfully")
+
+    def back_to_login(self):
+        auth_widgets.setCurrentIndex(auth_widgets.currentIndex() - 1)
 
 
 class MainApp(QMainWindow):
@@ -345,11 +354,13 @@ class MainApp(QMainWindow):
 
         self.profile_view = QWidget()
         self.profile_view_label = QLabel("Profile view", self.profile_view)
-        self.profile_view_label.setStyleSheet("font: 50pt \"MS Shell Dlg 2\"; color: rgb(255, 255, 255); "
+        self.profile_view_label.setStyleSheet("font: 50pt \"MS Shell Dlg 2\"; color: rgb(0, 0, 0); "
                                               "background-color: rgba(255, 255, 255, 0);")
         self.profile_view_label.move(300, 300)
         self.wall.addWidget(self.profile_view)
         self.profile_but.clicked.connect(lambda: self.wall.setCurrentWidget(self.profile_view))
+        shortcut = QShortcut(QKeySequence(Qt.Key_Escape), self)
+        shortcut.activated.connect(self.close_application)
 
     def update_search_result(self):
         self.search_result = api_functionality.find_movies(self.lineEdit_searchbar.text())
@@ -399,6 +410,9 @@ class MainApp(QMainWindow):
     def show_search_view(self):
         self.wall.setCurrentWidget(self.search_view)
         self.lineEdit_searchbar.setFocus()
+
+    def close_application(self):
+        app_widgets.close()
 
     def show_all_saved_movies(self):
         try:
@@ -533,11 +547,14 @@ log_scr = LoginWindow()
 auth_widgets.addWidget(log_scr)
 reg_scr = RegisterWindow()
 auth_widgets.addWidget(reg_scr)
+auth_widgets.setWindowFlag(Qt.FramelessWindowHint)
 
 app_widgets = QtWidgets.QStackedWidget()
 app_widgets.setFixedWidth(1000)
 app_widgets.setFixedHeight(750)
 auth_widgets.show()
+app_widgets.setWindowFlag(Qt.FramelessWindowHint)
+
 
 main_scr = MainApp()
 app_widgets.addWidget(main_scr)
