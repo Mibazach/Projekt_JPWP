@@ -12,8 +12,6 @@ import api_functionality
 
 # TO DO
 # three widgets' interfaces
-# too long search result
-# choose a better colour palette
 
 """
 Zakładam na razie takie dwie tabele z takimi kolumnami:
@@ -139,8 +137,8 @@ class RegisterWindow(QMainWindow):
 
         self.widget = QWidget()
         self.widget.setGeometry(-1, -1, 801, 551)
-        self.widget.setStyleSheet("background-color: qlineargradient(spread:pad, x1:0, y1:0.102, x2:1, "
-                                  "y2:0.9375, stop:0 rgba(0, 0, 0, 255), stop:1 rgba(158, 158, 158, 255));")
+        self.widget.setStyleSheet("#widget{background-image: url('resources/background.png');}")
+        self.widget.setObjectName("widget")
         self.setCentralWidget(self.widget)
 
         self.label_title = QLabel("Create a new Filmonator account!", self.widget)
@@ -237,8 +235,13 @@ class RegisterWindow(QMainWindow):
         auth_widgets.setCurrentIndex(auth_widgets.currentIndex() - 1)
 
 
+def close_application():
+    app_widgets.close()
+
+
 class MainApp(QMainWindow):
     def __init__(self):
+        self.add_template = None
         self.search_result = None
         super(MainApp, self).__init__()
         app_widgets.setWindowIcon(QIcon('resources/icons/app_icon.png'))
@@ -298,6 +301,11 @@ class MainApp(QMainWindow):
         self.home_view = QScrollArea()
         self.home_view.setWidgetResizable(True)
         self.home_view.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOn)
+        self.label_nothing = QLabel("", self.home_view)
+        self.label_nothing.move(130, 90)
+        self.label_nothing.resize(360, 110)
+        self.label_nothing.setStyleSheet("font: 20pt \"MS Shell Dlg 2\"; color: white; "
+                                         "background-color: rgba(255, 255, 255, 0);")
         self.home_view_widget = QWidget()
         self.home_view_layout = QVBoxLayout(self.home_view_widget)
         self.home_view_layout.setContentsMargins(0, 0, 0, 0)
@@ -309,9 +317,7 @@ class MainApp(QMainWindow):
         self.show_all_saved_movies()
 
         self.wall.addWidget(self.home_view)
-        self.home_but.clicked.connect(lambda: self.wall.setCurrentWidget(self.home_view))
-        #
-        #
+        self.home_but.clicked.connect(self.show_home)
 
         self.search_view = QWidget()
         self.layout = QVBoxLayout(self.search_view)
@@ -359,12 +365,21 @@ class MainApp(QMainWindow):
         self.profile_view_label.move(300, 300)
         self.wall.addWidget(self.profile_view)
         self.profile_but.clicked.connect(lambda: self.wall.setCurrentWidget(self.profile_view))
+
+        self.mas_view = QWidget()
+        self.wall.addWidget(self.mas_view)
+
         shortcut = QShortcut(QKeySequence(Qt.Key_Escape), self)
-        shortcut.activated.connect(self.close_application)
+        shortcut.activated.connect(close_application)
+
+    def show_home(self):
+        self.label_nothing.setText("")
+        self.clear_movies()
+        self.wall.setCurrentWidget(self.home_view)
+        self.show_all_saved_movies()
 
     def update_search_result(self):
         self.search_result = api_functionality.find_movies(self.lineEdit_searchbar.text())
-        print("ddddd")
         self.display_search_result()
 
     def display_search_result(self):
@@ -380,22 +395,54 @@ class MainApp(QMainWindow):
             for movie in self.search_result:
                 title = movie['Title']
                 year = movie['Year']
-                button_text = f"{title} ({year})"
+                short_title = ""
+                if len(title) > 25:
+                    short_title = title[0:30]+"..."
+                else:
+                    short_title = title
+                button_text = f"{short_title} ({year})"
                 button = QPushButton(button_text)
+                button.setToolTip(title)
                 button.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
-                button.setMaximumWidth(500)
+                button.setMaximumWidth(400)
+                button.setMaximumHeight(50)
+                button.setFixedWidth(400)
                 button.setStyleSheet("font: 12pt \"MS Shell Dlg 2\"; color: white; "
-                                     "background-color: rgba(255, 255, 255, 0); border: 2px solid white;")
-                self.layout.addWidget(button)
-                button.clicked.connect(lambda checked, movie=movie: self.handle_button_click(movie))
+                                     "background-color: rgba(255, 255, 255, 0); border: 1px solid white;")
+                button_container = QWidget()
+                button_container_layout = QHBoxLayout()
+                button_container.setLayout(button_container_layout)
+                button_container_layout.addWidget(button)
+                button_container_layout.setContentsMargins(0, 0, 0, 0)
+                add_button = QPushButton()
+                add_button.setIcon(QIcon("resources/icons/plus.png"))
+                add_button.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+                add_button.setFixedWidth(50)
+                add_button.setFixedHeight(30)
+                add_button.setStyleSheet("background-color: rgba(255, 255, 255, 0); border: none;")
+                add_button.setStyleSheet("font: 12pt \"MS Shell Dlg 2\"; color: white; "
+                                         "background-color: rgba(255, 255, 255, 0); border: 2px solid white;")
+                add_button.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+                button_container_layout.addWidget(add_button)
+                self.layout.setSpacing(7)
+                self.layout.addWidget(button_container)
+                button.clicked.connect(lambda checked, moviee=movie: self.handle_button_click(moviee))
+                add_button.clicked.connect(lambda checked, moviee=movie: self.handle_add_button_click(moviee))
         else:
             self.nf_label.setText("Nothing found.")
             self.nf_label.adjustSize()
             self.clear_buttons()
 
+    def handle_add_button_click(self, movie):
+        self.wall.setCurrentWidget(self.mas_view)
+        #self.add_template = MovieTemplate(movie['Title'], movie['Year'], current_logged_user,
+        #                                  '0', "aaa", movie['Poster'])
+        # self.home_view_layout.addWidget()
+
     def handle_button_click(self, movie):
-        print("You clicked: ", movie['Title'], type(movie))
+        self.clear_movies()
         self.show_all_movie_by_title(movie['Title'])
+        self.wall.setCurrentWidget(self.home_view)
 
     def clear_buttons(self):
         while self.layout.count() > 0:
@@ -407,14 +454,18 @@ class MainApp(QMainWindow):
             else:
                 self.layout.removeItem(item)
 
+    def clear_movies(self):
+        while self.home_view_layout.count():
+            item = self.home_view_layout.takeAt(0)
+            if item.widget():
+                item.widget().deleteLater()
+
     def show_search_view(self):
         self.wall.setCurrentWidget(self.search_view)
         self.lineEdit_searchbar.setFocus()
 
-    def close_application(self):
-        app_widgets.close()
-
     def show_all_saved_movies(self):
+        self.label_nothing.setText("")
         try:
             mydb = database_con.data_base_connect()
             my_cursor = mydb.cursor()
@@ -441,8 +492,11 @@ class MainApp(QMainWindow):
             list_of_movies = my_cursor.fetchall()
             mydb.close()
             if len(list_of_movies) == 0:
+                self.label_nothing.setText("No user added that movie to their profile! ...yet.")
+                self.label_nothing.adjustSize()
                 print('No user added that movie to their profile! ...yet.')
                 return
+            self.label_nothing.setText("")
             print(list_of_movies, type(list_of_movies))
             for movie in list_of_movies:
                 title = movie[1]
@@ -475,7 +529,8 @@ class MainApp(QMainWindow):
                 review = movie[8]
                 self.home_view_layout.addWidget(MovieTemplate(title, year, author, rating, review, poster_path))
         except mysql.connector.errors.DatabaseError:
-            print('Coś poszło nie tak z wyświetlaniem DDDDD...')
+            print('Coś poszło nie tak z wyświetlaniem...')
+
 
 class MovieTemplate(QWidget):
     def __init__(self, title, year, author, rating, review, poster_path, parent=None):
@@ -489,10 +544,7 @@ class MovieTemplate(QWidget):
         self.init()
 
     def init(self):
-        # Create the main layout
         main_layout = QHBoxLayout(self)
-
-        # Create the poster widget
         poster_label = QLabel(self)
         response = requests.get(self.poster_path)
         image_data = response.content
@@ -534,7 +586,6 @@ class MovieTemplate(QWidget):
         main_layout.addWidget(container_widget)
 
         self.setLayout(main_layout)
-
 
 
 app = QApplication(sys.argv)

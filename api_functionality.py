@@ -57,7 +57,3 @@ def find_movies(search_input):
         return returned_movies_json["Search"]
     else:
         return None
-
-
-print(find_movies("Shrek the Third"))
-
