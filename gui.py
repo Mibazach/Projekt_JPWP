@@ -43,7 +43,7 @@ class LoginWindow(QMainWindow):
         super(LoginWindow, self).__init__()
         self.a = None
         self.setGeometry(0, 0, 800, 550)
-        auth_widgets.setWindowTitle("Welcome to Filmonator!")
+        auth_widgets.setWindowTitle("Welcome to Filmonator™!")
         auth_widgets.setWindowIcon(QIcon('resources/icons/app_icon.png'))
         self.widget = QWidget()
         self.widget.setGeometry(-1, -1, 801, 551)
@@ -51,8 +51,8 @@ class LoginWindow(QMainWindow):
         self.widget.setObjectName("widget")
         self.setCentralWidget(self.widget)
 
-        self.label_title = QLabel("Filmonator", self.widget)
-        self.label_title.move(180, 90)
+        self.label_title = QLabel("Filmonator™", self.widget)
+        self.label_title.move(130, 90)
         self.label_title.resize(550, 200)
         self.label_title.setStyleSheet("color: rgb(0, 0, 0); background-color: rgba(255, 255, 255, 0); font: "
                                        "72pt \"Pristina\";")
@@ -147,7 +147,7 @@ class RegisterWindow(QMainWindow):
         self.widget.setObjectName("widget")
         self.setCentralWidget(self.widget)
 
-        self.label_title = QLabel("Create a new Filmonator account!", self.widget)
+        self.label_title = QLabel("Create a new Filmonator™ account!", self.widget)
         self.label_title.move(180, 110)
         self.label_title.resize(600, 40)
         self.label_title.setStyleSheet("font: 20pt \"MS Shell Dlg 2\"; color: rgb(0, 0, 0); background-color: "
@@ -255,7 +255,7 @@ class MainApp(QMainWindow):
         self.search_result = None
         super(MainApp, self).__init__()
         app_widgets.setWindowIcon(QIcon('resources/icons/app_icon.png'))
-        app_widgets.setWindowTitle("Filmonator")
+        app_widgets.setWindowTitle("Filmonator™")
         self.layout = QVBoxLayout()
         self.layout.setSpacing(0)
         self.layout.setContentsMargins(0, 0, 0, 0)
@@ -267,8 +267,8 @@ class MainApp(QMainWindow):
         self.bar_layout = QVBoxLayout()
         self.bar_layout.addWidget(self.bar, stretch=1)
         self.bar.setLayout(QVBoxLayout())
-        self.label_bar_title = QLabel("Filmonator", self.bar)
-        self.label_bar_title.resize(350, 107)
+        self.label_bar_title = QLabel("Filmonator™", self.bar)
+        self.label_bar_title.resize(450, 107)
         self.label_bar_title.setStyleSheet("background-color: rgba(255, 255, 255, 0);font: 50pt \"Pristina\"; color: "
                                            "white")
 
@@ -476,10 +476,12 @@ class MainApp(QMainWindow):
         self.show_all_user_current_user_movies()
 
     def update_search_result(self):
+        self.clear_buttons()
         self.search_result = api_functionality.find_movies(self.lineEdit_searchbar.text())
         self.display_search_result()
 
     def display_search_result(self):
+        self.clear_buttons()
         if self.search_result:
             self.nf_label.setText("")
             self.nf_label.adjustSize()
@@ -584,7 +586,7 @@ class MainApp(QMainWindow):
         try:
             mydb = database_con.data_base_connect()
             my_cursor = mydb.cursor()
-            my_cursor.execute('SELECT * FROM movies')
+            my_cursor.execute('SELECT * FROM movies ORDER BY posted_when DESC')
             list_of_movies = my_cursor.fetchall()
             print(list_of_movies, type(list_of_movies))
             for movie in list_of_movies:
@@ -603,7 +605,7 @@ class MainApp(QMainWindow):
             title = f"'{title}'"
             mydb = database_con.data_base_connect()
             my_cursor = mydb.cursor()
-            my_cursor.execute(f'SELECT * FROM movies WHERE title = {title}')
+            my_cursor.execute(f'SELECT * FROM movies WHERE title = {title} ORDER BY posted_when DESC')
             list_of_movies = my_cursor.fetchall()
             mydb.close()
             if len(list_of_movies) == 0:
@@ -628,7 +630,8 @@ class MainApp(QMainWindow):
         try:
             mydb = database_con.data_base_connect()
             my_cursor = mydb.cursor()
-            my_cursor.execute(f'SELECT * FROM movies WHERE posted_by = {current_logged_user}')
+
+            my_cursor.execute(f'SELECT * FROM movies WHERE posted_by = {current_logged_user} ORDER BY posted_when DESC')
             list_of_movies = my_cursor.fetchall()
             mydb.close()
             if len(list_of_movies) == 0:
