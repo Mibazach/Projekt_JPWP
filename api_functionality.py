@@ -35,11 +35,16 @@ def add_movie_to_db(username, movie_information_json, rating, review):
         my_cursor = mydb.cursor()
         title = movie_information_json['Title']
         year = movie_information_json['Year']
-        type = movie_information_json['Type']
         poster = movie_information_json['Poster']
-        query = 'INSERT INTO movies (title, year, type, poster, posted_by, posted_when ,rating, review)' \
-                ' VALUES (%s, %s, %s, %s, %s, CURRENT_TIMESTAMP, %s)'
-        my_cursor.execute(query, (title, year, type, poster, username, rating, review))
+        query = f'SELECT * FROM movies WHERE title = %s AND posted_by = %s'
+        my_cursor.execute(query, (title, username))
+        if my_cursor.fetchall() != 0:
+            print('Ten film już został dodany do profilu')
+            mydb.close()
+            return
+        query = 'INSERT INTO movies (title, year, poster, posted_by, posted_when ,rating, review)' \
+                ' VALUES (%s, %s, %s, %s, CURRENT_TIMESTAMP, %s, %s)'
+        my_cursor.execute(query, (title, year, poster, username, rating, review))
         mydb.commit()
         mydb.close()
     except mysql.connector.errors.DatabaseError:
@@ -59,4 +64,4 @@ def find_movies(search_input):
         return None
 
 
-add_movie_to_db("testuser", {'Title': 'Shrek 2', 'Year': '2004', 'imdbID': 'tt0298148', 'Type': 'movie', 'Poster': 'https://m.media-amazon.com/images/M/MV5BMDJhMGRjN2QtNDUxYy00NGM3LThjNGQtMmZiZTRhNjM4YzUxL2ltYWdlL2ltYWdlXkEyXkFqcGdeQXVyMTQxNzMzNDI@._V1_SX300.jpg'}, "10/10", "slay")
+# add_movie_to_db("testuser", {'Title': 'Shrek 2', 'Year': '2004', 'imdbID': 'tt0298148', 'Type': 'movie', 'Poster': 'https://m.media-amazon.com/images/M/MV5BMDJhMGRjN2QtNDUxYy00NGM3LThjNGQtMmZiZTRhNjM4YzUxL2ltYWdlL2ltYWdlXkEyXkFqcGdeQXVyMTQxNzMzNDI@._V1_SX300.jpg'}, "10/10", "slay")

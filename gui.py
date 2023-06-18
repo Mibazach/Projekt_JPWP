@@ -613,6 +613,17 @@ class MainApp(QMainWindow):
         except mysql.connector.errors.DatabaseError:
             print('Coś poszło nie tak z wyświetlaniem...')
 
+    def delete_this_movie(self, movie):
+        try:
+            mydb = database_con.data_base_connect()
+            my_cursor = mydb.cursor()
+            title = movie[1]
+            query = f'DELETE FROM movies WHERE title = %s AND username = %s'
+            my_cursor.execute(query, (title, current_logged_user))
+            mydb.close()
+        except mysql.connector.errors.DatabaseError:
+            print('Coś poszło nie tak z usuwaniem...')
+
 
 class MovieTemplate(QWidget):
     def __init__(self, title, year, author, rating, review, poster_path, parent=None):
