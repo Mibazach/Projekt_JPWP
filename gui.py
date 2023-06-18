@@ -4,14 +4,14 @@ import requests
 from PyQt5 import QtWidgets, QtCore
 from PyQt5.QtCore import QSize, Qt
 from PyQt5.QtGui import QIcon, QPixmap, QKeySequence
-from PyQt5.QtWidgets import QApplication, QWidget, QLabel, QMainWindow, QLineEdit, QPushButton, QVBoxLayout, QShortcut, \
+from PyQt5.QtWidgets import QApplication, QWidget, QLabel, QMainWindow, QLineEdit, QPushButton, QVBoxLayout, QShortcut,\
     QSizePolicy, QHBoxLayout, QGridLayout, QScrollArea, QTextEdit
 import database_con
 import hashlib
 import api_functionality
 
 # TO DO
-# three widgets' interfaces
+# nothing label in profile_view
 
 """
 Zakładam na razie takie dwie tabele z takimi kolumnami:
@@ -22,6 +22,7 @@ movies: | movie_id | title | year | type | poster | posted_by |
 """
 
 global current_logged_user
+current_logged_user = None
 
 
 def next_widget():
@@ -122,6 +123,7 @@ class LoginWindow(QMainWindow):
                 stored_password = result[0]
                 if stored_password == hashlib.md5(password.encode()).hexdigest():
                     self.label_err.setText("")
+                    global current_logged_user
                     current_logged_user = uname
                     go_to_main()
             self.label_err.setText("Invalid username or password")
@@ -290,8 +292,7 @@ class MainApp(QMainWindow):
 
         self.wall = QtWidgets.QStackedWidget()
         self.wall.setGeometry(-1, 91, 1000, 650)
-        # self.wall.setStyleSheet("background-color: qlineargradient(spread:pad, x1:0, y1:0, x2:0, y2:1, stop:0 rgba("
-        #                        "0, 0, 0, 255), stop:1 rgba(158, 158, 158, 255))")
+
         self.wall.setStyleSheet("background-color: black;")
         self.wall_layout = QVBoxLayout()
         self.wall_layout.addWidget(self.wall, stretch=9)
@@ -360,13 +361,35 @@ class MainApp(QMainWindow):
         #
         #
 
-        self.profile_view = QWidget()
-        self.profile_view_label = QLabel("Profile view", self.profile_view)
-        self.profile_view_label.setStyleSheet("font: 50pt \"MS Shell Dlg 2\"; color: rgb(0, 0, 0); "
-                                              "background-color: rgba(255, 255, 255, 0);")
-        self.profile_view_label.move(300, 300)
+        # self.profile_view = QWidget()
+        # self.profile_view_label = QLabel("Profile view", self.profile_view)
+        # self.profile_view_label.setStyleSheet("font: 50pt \"MS Shell Dlg 2\"; color: rgb(0, 0, 0); "
+        #                                       "background-color: rgba(255, 255, 255, 0);")
+        # self.profile_view_label.move(300, 300)
+        # self.wall.addWidget(self.profile_view)
+        # self.profile_but.clicked.connect(lambda: self.wall.setCurrentWidget(self.profile_view))
+
+        self.profile_view = QScrollArea()
+        self.profile_view.setWidgetResizable(True)
+        self.profile_view.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOn)
+        self.label_nothing_in_prof = QLabel("", self.profile_view)
+        self.label_nothing_in_prof.move(130, 90)
+        self.label_nothing_in_prof.resize(360, 110)
+        self.label_nothing_in_prof.setStyleSheet("font: 20pt \"MS Shell Dlg 2\"; color: white; "
+                                                 "background-color: rgba(255, 255, 255, 0);")
+        self.profile_view_widget = QWidget()
+        self.profile_view_layout = QVBoxLayout(self.profile_view_widget)
+        self.profile_view_layout.setContentsMargins(0, 0, 0, 0)
+        self.profile_view_layout.setSpacing(0)
+        self.profile_view.setWidget(self.profile_view_widget)
+        self.profile_layout = QVBoxLayout(self.profile_view)
+        self.profile_view.setLayout(self.profile_layout)
+
+        #self.show_all_user_current_user_movies()
+        self.profile_view_layout.addWidget(MovieTemplate('Title', 'Year', 'Author', 'Rating', 'Review', 'https://m.media-amazon.com/images/M/MV5BOGZhM2FhNTItODAzNi00YjA0LWEyN2UtNjJlYWQzYzU1MDg5L2ltYWdlL2ltYWdlXkEyXkFqcGdeQXVyMTQxNzMzNDI@._V1_SX300.jpg'))
+
         self.wall.addWidget(self.profile_view)
-        self.profile_but.clicked.connect(lambda: self.wall.setCurrentWidget(self.profile_view))
+        self.profile_but.clicked.connect(self.show_profile)
 
         self.mas_view = QWidget()
         self.mas_label = QLabel("Adding", self.mas_view)
@@ -451,6 +474,12 @@ class MainApp(QMainWindow):
         self.clear_movies()
         self.wall.setCurrentWidget(self.home_view)
         self.show_all_saved_movies()
+
+    def show_profile(self):
+        self.label_nothing_in_prof.setText("")
+        self.clear_movies_in_prof()
+        self.wall.setCurrentWidget(self.profile_view)
+        #self.show_all_user_current_user_movies()
 
     def update_search_result(self):
         self.search_result = api_functionality.find_movies(self.lineEdit_searchbar.text())
@@ -542,6 +571,12 @@ class MainApp(QMainWindow):
             if item.widget():
                 item.widget().deleteLater()
 
+    def clear_movies_in_prof(self):
+        while self.profile_layout.count():
+            item = self.profile_layout.takeAt(0)
+            if item.widget():
+                item.widget().deleteLater()
+
     def show_search_view(self):
         self.wall.setCurrentWidget(self.search_view)
         self.lineEdit_searchbar.setFocus()
@@ -589,16 +624,19 @@ class MainApp(QMainWindow):
                 review = movie[8]
                 self.home_view_layout.addWidget(MovieTemplate(title, year, author, rating, review, poster_path))
         except mysql.connector.errors.DatabaseError:
-            print('Coś poszło nie tak z wyświetlaniem DDDDD...')
+            print('Coś poszło nie tak z wyświetlaniem...')
 
     def show_all_user_current_user_movies(self):
         try:
             mydb = database_con.data_base_connect()
             my_cursor = mydb.cursor()
-            my_cursor.execute(f'SELECT * FROM movies WHERE title = {current_logged_user}')
+            query = 'SELECT * FROM movies WHERE username = %s'
+            my_cursor.execute(query, current_logged_user)
             list_of_movies = my_cursor.fetchall()
             mydb.close()
             if len(list_of_movies) == 0:
+                self.label_nothing_in_prof.setText("Nothing to see here... yet.")
+                self.label_nothing_in_prof.adjustSize()
                 print('Nothing to see here... yet.')
                 return
             print(list_of_movies, type(list_of_movies))
@@ -609,7 +647,7 @@ class MainApp(QMainWindow):
                 author = movie[5]
                 rating = movie[7]
                 review = movie[8]
-                self.home_view_layout.addWidget(MovieTemplate(title, year, author, rating, review, poster_path))
+                self.profile_view_layout.addWidget(MovieTemplate(title, year, author, rating, review, poster_path))
         except mysql.connector.errors.DatabaseError:
             print('Coś poszło nie tak z wyświetlaniem...')
 

@@ -62,6 +62,3 @@ def find_movies(search_input):
         return returned_movies_json["Search"]
     else:
         return None
-
-
-# add_movie_to_db("testuser", {'Title': 'Shrek 2', 'Year': '2004', 'imdbID': 'tt0298148', 'Type': 'movie', 'Poster': 'https://m.media-amazon.com/images/M/MV5BMDJhMGRjN2QtNDUxYy00NGM3LThjNGQtMmZiZTRhNjM4YzUxL2ltYWdlL2ltYWdlXkEyXkFqcGdeQXVyMTQxNzMzNDI@._V1_SX300.jpg'}, "10/10", "slay")
