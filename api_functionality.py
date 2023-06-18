@@ -31,6 +31,11 @@ def get_movies_req(movie_title):
 
 def add_movie_to_db(username, movie_information_json, rating, review):
     try:
+        username = username.strip('"')
+        print(username)
+        print(movie_information_json)
+        print(rating)
+        print(review)
         mydb = database_con.data_base_connect()
         my_cursor = mydb.cursor()
         title = movie_information_json['Title']
@@ -38,7 +43,7 @@ def add_movie_to_db(username, movie_information_json, rating, review):
         poster = movie_information_json['Poster']
         query = f'SELECT * FROM movies WHERE title = %s AND posted_by = %s'
         my_cursor.execute(query, (title, username))
-        if my_cursor.fetchall() != 0:
+        if len(my_cursor.fetchall()) != 0:
             print('Ten film już został dodany do profilu')
             mydb.close()
             return

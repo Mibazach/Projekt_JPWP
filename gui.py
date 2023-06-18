@@ -41,6 +41,7 @@ def go_to_main():
 class LoginWindow(QMainWindow):
     def __init__(self):
         super(LoginWindow, self).__init__()
+        self.a = None
         self.setGeometry(0, 0, 800, 550)
         auth_widgets.setWindowTitle("Welcome to Filmonator!")
         auth_widgets.setWindowIcon(QIcon('resources/icons/app_icon.png'))
@@ -130,12 +131,14 @@ class LoginWindow(QMainWindow):
             self.lineEdit_pass.setText("")
 
     def close_application(self):
+        self.a = None
         auth_widgets.close()
 
 
 class RegisterWindow(QMainWindow):
     def __init__(self):
         super(RegisterWindow, self).__init__()
+        self.a = None
         self.setGeometry(0, 0, 800, 550)
 
         self.widget = QWidget()
@@ -233,8 +236,11 @@ class RegisterWindow(QMainWindow):
                 mydb.close()
                 self.label_reg_err.clear()
                 self.label_reg_success.setText("You registered successfully")
+                self.lineEdit_reg_username.setText("")
+                self.lineEdit_reg_pass.setText("")
 
     def back_to_login(self):
+        self.a = None
         auth_widgets.setCurrentIndex(auth_widgets.currentIndex() - 1)
 
 
@@ -358,17 +364,6 @@ class MainApp(QMainWindow):
         self.wall.addWidget(self.search_view)
         self.search_but.clicked.connect(self.show_search_view)
 
-        #
-        #
-
-        # self.profile_view = QWidget()
-        # self.profile_view_label = QLabel("Profile view", self.profile_view)
-        # self.profile_view_label.setStyleSheet("font: 50pt \"MS Shell Dlg 2\"; color: rgb(0, 0, 0); "
-        #                                       "background-color: rgba(255, 255, 255, 0);")
-        # self.profile_view_label.move(300, 300)
-        # self.wall.addWidget(self.profile_view)
-        # self.profile_but.clicked.connect(lambda: self.wall.setCurrentWidget(self.profile_view))
-
         self.profile_view = QScrollArea()
         self.profile_view.setWidgetResizable(True)
         self.profile_view.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOn)
@@ -385,8 +380,7 @@ class MainApp(QMainWindow):
         self.profile_layout = QVBoxLayout(self.profile_view)
         self.profile_view.setLayout(self.profile_layout)
 
-        #self.show_all_user_current_user_movies()
-        self.profile_view_layout.addWidget(MovieTemplate('Title', 'Year', 'Author', 'Rating', 'Review', 'https://m.media-amazon.com/images/M/MV5BOGZhM2FhNTItODAzNi00YjA0LWEyN2UtNjJlYWQzYzU1MDg5L2ltYWdlL2ltYWdlXkEyXkFqcGdeQXVyMTQxNzMzNDI@._V1_SX300.jpg'))
+        self.show_all_user_current_user_movies()
 
         self.wall.addWidget(self.profile_view)
         self.profile_but.clicked.connect(self.show_profile)
@@ -447,6 +441,7 @@ class MainApp(QMainWindow):
                                           "solid white; ")
 
         self.mas_submit_but.clicked.connect(lambda: self.handle_submit_button_click(self.movie, str(self.mas_slider.value())+'/10', str(self.mas_textedit.toPlainText())))
+
         self.mas_label_submitted = QLabel("", self.mas_view)
         self.mas_label_submitted.move(300, 560)
         self.mas_label_submitted.resize(300, 61)
@@ -468,7 +463,6 @@ class MainApp(QMainWindow):
     def update_label_value(self, value):
         self.mas_slider_value_label.setText(str(value))
 
-
     def show_home(self):
         self.label_nothing.setText("")
         self.clear_movies()
@@ -479,7 +473,7 @@ class MainApp(QMainWindow):
         self.label_nothing_in_prof.setText("")
         self.clear_movies_in_prof()
         self.wall.setCurrentWidget(self.profile_view)
-        #self.show_all_user_current_user_movies()
+        self.show_all_user_current_user_movies()
 
     def update_search_result(self):
         self.search_result = api_functionality.find_movies(self.lineEdit_searchbar.text())
@@ -499,7 +493,6 @@ class MainApp(QMainWindow):
                 print(movie)
                 title = movie['Title']
                 year = movie['Year']
-                short_title = ""
                 if len(title) > 25:
                     short_title = title[0:30] + "..."
                 else:
@@ -538,12 +531,17 @@ class MainApp(QMainWindow):
             self.clear_buttons()
 
     def handle_submit_button_click(self, movie, rating, review):
+        self.mas_slider.setValue(0)
+        self.mas_textedit.setText("")
+        print('wejscie do handle')
         self.mas_label_submitted.setText("Successfully submitted!")
+        print('aa')
         api_functionality.add_movie_to_db(current_logged_user, movie, rating, review)
         print("AAAA!!")
 
     def handle_add_button_click(self, movie):
         self.mas_title_label.setText(movie['Title'])
+        self.mas_label_submitted.setText("")
         self.wall.setCurrentWidget(self.mas_view)
         self.movie = movie
         # self.add_template = MovieTemplate(movie['Title'], movie['Year'], current_logged_user,
@@ -572,8 +570,8 @@ class MainApp(QMainWindow):
                 item.widget().deleteLater()
 
     def clear_movies_in_prof(self):
-        while self.profile_layout.count():
-            item = self.profile_layout.takeAt(0)
+        while self.profile_view_layout.count():
+            item = self.profile_view_layout.takeAt(0)
             if item.widget():
                 item.widget().deleteLater()
 
@@ -596,7 +594,7 @@ class MainApp(QMainWindow):
                 author = movie[5]
                 rating = movie[7]
                 review = movie[8]
-                self.home_view_layout.addWidget(MovieTemplate(title, year, author, rating, review, poster_path))
+                self.home_view_layout.addWidget(MovieTemplate(title, year, author, rating, review, poster_path, False))
         except mysql.connector.errors.DatabaseError:
             print('Coś poszło nie tak z wyświetlaniem...')
 
@@ -622,7 +620,7 @@ class MainApp(QMainWindow):
                 author = movie[5]
                 rating = movie[7]
                 review = movie[8]
-                self.home_view_layout.addWidget(MovieTemplate(title, year, author, rating, review, poster_path))
+                self.home_view_layout.addWidget(MovieTemplate(title, year, author, rating, review, poster_path, False))
         except mysql.connector.errors.DatabaseError:
             print('Coś poszło nie tak z wyświetlaniem...')
 
@@ -630,8 +628,7 @@ class MainApp(QMainWindow):
         try:
             mydb = database_con.data_base_connect()
             my_cursor = mydb.cursor()
-            query = 'SELECT * FROM movies WHERE username = %s'
-            my_cursor.execute(query, current_logged_user)
+            my_cursor.execute(f'SELECT * FROM movies WHERE posted_by = {current_logged_user}')
             list_of_movies = my_cursor.fetchall()
             mydb.close()
             if len(list_of_movies) == 0:
@@ -647,24 +644,43 @@ class MainApp(QMainWindow):
                 author = movie[5]
                 rating = movie[7]
                 review = movie[8]
-                self.profile_view_layout.addWidget(MovieTemplate(title, year, author, rating, review, poster_path))
+                self.profile_view_layout.addWidget(MovieTemplate(title, year, author, rating,
+                                                                 review, poster_path, True))
         except mysql.connector.errors.DatabaseError:
             print('Coś poszło nie tak z wyświetlaniem...')
 
-    def delete_this_movie(self, movie):
-        try:
-            mydb = database_con.data_base_connect()
-            my_cursor = mydb.cursor()
-            title = movie[1]
-            query = f'DELETE FROM movies WHERE title = %s AND username = %s'
-            my_cursor.execute(query, (title, current_logged_user))
-            mydb.close()
-        except mysql.connector.errors.DatabaseError:
-            print('Coś poszło nie tak z usuwaniem...')
+    # def delete_this_movie(self, movie):
+    #     try:
+    #         mydb = database_con.data_base_connect()
+    #         my_cursor = mydb.cursor()
+    #         title = movie[1]
+    #         query = f'DELETE FROM movies WHERE title = %s AND username = %s'
+    #         my_cursor.execute(query, (title, current_logged_user))
+    #         mydb.close()
+    #     except mysql.connector.errors.DatabaseError:
+    #         print('Coś poszło nie tak z usuwaniem...')
+
+
+def delete_this_movie(title):
+    try:
+        username = current_logged_user.strip('"')
+        #username = current_logged_user
+        mydb = database_con.data_base_connect()
+        my_cursor = mydb.cursor()
+        query = "DELETE FROM movies WHERE title = '"+str(title)+"' AND posted_by = '"+str(username)+"'"
+        print(query)
+        my_cursor.execute(query)
+        print(query)
+        print("Review of "+title+" by "+username+" deleted.")
+        mydb.commit()
+        mydb.close()
+        main_scr.show_profile()
+    except mysql.connector.errors.DatabaseError:
+        print('Coś poszło nie tak z usuwaniem...')
 
 
 class MovieTemplate(QWidget):
-    def __init__(self, title, year, author, rating, review, poster_path, parent=None):
+    def __init__(self, title, year, author, rating, review, poster_path, delete_bool, parent=None):
         super().__init__(parent)
         self.title = title
         self.year = year
@@ -672,6 +688,7 @@ class MovieTemplate(QWidget):
         self.rating = rating
         self.review = review
         self.poster_path = poster_path
+        self.delete_bool = delete_bool
         self.init()
 
     def init(self):
@@ -690,9 +707,26 @@ class MovieTemplate(QWidget):
         container_layout = QGridLayout(container_widget)
 
         title_label = QLabel(f"\'{self.title}\' ({self.year})")
-        container_layout.addWidget(title_label, 0, 0)
+        if not self.delete_bool:
+            container_layout.addWidget(title_label, 0, 0)
         title_label.setStyleSheet("font: 18pt \"MS Shell Dlg 2\"; color: white; "
                                   "background-color: rgba(255, 255, 255, 0); border: 1px solid white;")
+        if self.delete_bool:
+            title_layout = QHBoxLayout()
+            title_layout.addWidget(title_label)
+            del_button = QPushButton()
+            container_layout.addWidget(del_button, 0, 0)
+            profile_ico = QIcon('resources/icons/trash.png')
+            icon_size = QSize(80, 50)
+            del_button.setIcon(profile_ico)
+            del_button.setIconSize(icon_size)
+            del_button.setStyleSheet("font: 18pt \"MS Shell Dlg 2\"; color: white; "
+                                     "background-color: rgba(255, 255, 255, 0); border: 1px solid white;")
+            title_layout.addWidget(del_button)
+            container_layout.addLayout(title_layout, 0, 0)
+            size_policy = QSizePolicy(QSizePolicy.Fixed, QSizePolicy.Expanding)
+            del_button.setSizePolicy(size_policy)
+            del_button.clicked.connect(lambda: delete_this_movie(self.title))
 
         rating_label = QLabel(f"Rating: {self.rating}")
         container_layout.addWidget(rating_label, 1, 0)
