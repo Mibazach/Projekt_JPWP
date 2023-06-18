@@ -1,11 +1,11 @@
 import sys
 import mysql.connector.errors
 import requests
-from PyQt5 import QtWidgets
+from PyQt5 import QtWidgets, QtCore
 from PyQt5.QtCore import QSize, Qt
 from PyQt5.QtGui import QIcon, QPixmap, QKeySequence
 from PyQt5.QtWidgets import QApplication, QWidget, QLabel, QMainWindow, QLineEdit, QPushButton, QVBoxLayout, QShortcut, \
-    QSizePolicy, QHBoxLayout, QGridLayout, QScrollArea
+    QSizePolicy, QHBoxLayout, QGridLayout, QScrollArea, QTextEdit
 import database_con
 import hashlib
 import api_functionality
@@ -130,6 +130,7 @@ class LoginWindow(QMainWindow):
     def close_application(self):
         auth_widgets.close()
 
+
 class RegisterWindow(QMainWindow):
     def __init__(self):
         super(RegisterWindow, self).__init__()
@@ -241,6 +242,7 @@ def close_application():
 
 class MainApp(QMainWindow):
     def __init__(self):
+        self.movie = None
         self.add_template = None
         self.search_result = None
         super(MainApp, self).__init__()
@@ -367,10 +369,82 @@ class MainApp(QMainWindow):
         self.profile_but.clicked.connect(lambda: self.wall.setCurrentWidget(self.profile_view))
 
         self.mas_view = QWidget()
+        self.mas_label = QLabel("Adding", self.mas_view)
+        self.mas_label.move(460, 0)
+        self.mas_label.resize(81, 121)
+        self.mas_label.setStyleSheet("font: 16pt \"MS Shell Dlg 2\"; color: rgb(255, 255, 255); "
+                                     "background-color: rgba(255, 255, 255, 0);")
+        self.mas_label_2 = QLabel("to your library", self.mas_view)
+        self.mas_label_2.move(417, 140)
+        self.mas_label_2.resize(171, 121)
+        self.mas_label_2.setStyleSheet("font: 16pt \"MS Shell Dlg 2\"; color: rgb(255, 255, 255); "
+                                       "background-color: rgba(255, 255, 255, 0);")
+        self.mas_title_label = QLabel("", self.mas_view)
+        self.mas_title_label.move(10, 70)
+        self.mas_title_label.resize(981, 121)
+        self.mas_title_label.setStyleSheet("font: 28pt \"MS Shell Dlg 2\"; color: rgb(255, 255, 255); "
+                                           "background-color: rgba(255, 255, 255, 0);")
+        self.mas_title_label.setAlignment(QtCore.Qt.AlignCenter)
+        self.mas_label_3 = QLabel("Your rating:", self.mas_view)
+        self.mas_label_3.move(60, 230)
+        self.mas_label_3.resize(160, 121)
+        self.mas_label_3.setStyleSheet("font: 16pt \"MS Shell Dlg 2\"; color: rgb(255, 255, 255); "
+                                       "background-color: rgba(255, 255, 255, 0);")
+        self.mas_label_3 = QLabel("Your review:", self.mas_view)
+        self.mas_label_3.move(60, 310)
+        self.mas_label_3.resize(160, 121)
+        self.mas_label_3.setStyleSheet("font: 16pt \"MS Shell Dlg 2\"; color: rgb(255, 255, 255); "
+                                       "background-color: rgba(255, 255, 255, 0);")
+        self.mas_slider = QtWidgets.QSlider(QtCore.Qt.Horizontal, self.mas_view)
+        self.mas_slider.setMinimum(0)
+        self.mas_slider.setMaximum(10)
+        self.mas_slider.setSingleStep(1)
+        self.mas_slider.move(220, 270)
+        self.mas_slider.resize(640, 41)
+        self.mas_slider.setStyleSheet("color: rgb(255, 255, 255); background-color: rgba(255, 255, 255, 0);")
+        self.mas_slider_value_label = QLabel(str(self.mas_slider.value()), self.mas_view)
+        self.mas_slider_value_label.move(880, 250)
+        self.mas_slider_value_label.resize(71, 71)
+        self.mas_slider_value_label.setStyleSheet("font: 36pt \"MS Shell Dlg 2\"; color: rgb(255, 255, 255); "
+                                                  "background-color: rgba(255, 255, 255, 0);")
+        self.mas_slider.valueChanged.connect(self.update_label_value)
+        self.mas_textedit = QTextEdit(self.mas_view)
+        self.mas_textedit.move(230, 350)
+        self.mas_textedit.resize(630, 170)
+        self.mas_textedit.setStyleSheet("font: 16pt \"MS Shell Dlg 2\"; color: rgb(255, 255, 255); background-color: "
+                                        "rgba(255, 255, 255, 0);")
+        self.character_limit = 200
+        self.mas_textedit.textChanged.connect(self.limit_characters)
+        self.mas_submit_but = QPushButton(self.mas_view)
+        self.mas_submit_but.setText("Submit")
+        self.mas_submit_but.move(660, 560)
+        self.mas_submit_but.resize(220, 60)
+        self.mas_submit_but.setStyleSheet("font: 24pt \"MS Shell Dlg 2\"; color: rgb(255, 255, 255); "
+                                          "background-color: rgba(255, 255, 255, 0); border-radius: 7px; border: 2px "
+                                          "solid white; ")
+
+        self.mas_submit_but.clicked.connect(lambda: self.handle_submit_button_click(self.movie, str(self.mas_slider.value())+'/10', str(self.mas_textedit.toPlainText())))
+        self.mas_label_submitted = QLabel("", self.mas_view)
+        self.mas_label_submitted.move(300, 560)
+        self.mas_label_submitted.resize(300, 61)
+        self.mas_label_submitted.setStyleSheet("font: 16pt \"MS Shell Dlg 2\"; color: green; "
+                                               "background-color: rgba(255, 255, 255, 0);")
         self.wall.addWidget(self.mas_view)
 
         shortcut = QShortcut(QKeySequence(Qt.Key_Escape), self)
         shortcut.activated.connect(close_application)
+
+    def limit_characters(self):
+        cursor = self.mas_textedit.textCursor()
+        text = self.mas_textedit.toPlainText()
+
+        if len(text) > self.character_limit:
+            cursor.deletePreviousChar()
+            self.mas_textedit.setTextCursor(cursor)
+
+    def update_label_value(self, value):
+        self.mas_slider_value_label.setText(str(value))
+
 
     def show_home(self):
         self.label_nothing.setText("")
@@ -393,11 +467,12 @@ class MainApp(QMainWindow):
             self.layout.addWidget(spacer_widget)
             self.layout.setAlignment(Qt.AlignCenter)
             for movie in self.search_result:
+                print(movie)
                 title = movie['Title']
                 year = movie['Year']
                 short_title = ""
                 if len(title) > 25:
-                    short_title = title[0:30]+"..."
+                    short_title = title[0:30] + "..."
                 else:
                     short_title = title
                 button_text = f"{short_title} ({year})"
@@ -433,9 +508,16 @@ class MainApp(QMainWindow):
             self.nf_label.adjustSize()
             self.clear_buttons()
 
+    def handle_submit_button_click(self, movie, rating, review):
+        self.mas_label_submitted.setText("Successfully submitted!")
+        api_functionality.add_movie_to_db(current_logged_user, movie, rating, review)
+        print("AAAA!!")
+
     def handle_add_button_click(self, movie):
+        self.mas_title_label.setText(movie['Title'])
         self.wall.setCurrentWidget(self.mas_view)
-        #self.add_template = MovieTemplate(movie['Title'], movie['Year'], current_logged_user,
+        self.movie = movie
+        # self.add_template = MovieTemplate(movie['Title'], movie['Year'], current_logged_user,
         #                                  '0', "aaa", movie['Poster'])
         # self.home_view_layout.addWidget()
 
@@ -584,7 +666,6 @@ class MovieTemplate(QWidget):
 
         main_layout.addWidget(poster_label)
         main_layout.addWidget(container_widget)
-
         self.setLayout(main_layout)
 
 
@@ -605,7 +686,6 @@ app_widgets.setFixedWidth(1000)
 app_widgets.setFixedHeight(750)
 auth_widgets.show()
 app_widgets.setWindowFlag(Qt.FramelessWindowHint)
-
 
 main_scr = MainApp()
 app_widgets.addWidget(main_scr)
