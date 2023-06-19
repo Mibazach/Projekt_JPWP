@@ -23,6 +23,7 @@ Utwórz kolejne zapytanie. Tym razem do wcześniej utworzonej tablicy spróbuj d
 Napisz przy użyciu PyQt5 (modułu QtWidgets) interfejs podobny do tego na obrazkach. Po naciśnięciu na przycisk danego koloru tło powinno się zmienić na ten kolor. Okno ma mieć na początku czarne tło. 
 (Podpowiedź: CSS Style Sheets)
 
-![image](https://github.com/Mibazach/Projekt_JPWP_v2/assets/115176038/785bcc66-97fc-47df-8827-4bb7a6abf781)
-![image](https://github.com/Mibazach/Projekt_JPWP_v2/assets/115176038/1770a3ee-0548-4707-9beb-f45fee58935a)
-![image](https://github.com/Mibazach/Projekt_JPWP_v2/assets/115176038/6fef3362-89b5-4718-b6dd-a01ae92501a3)
+![image](https://github.com/Mibazach/Projekt_JPWP_v2/assets/115176038/fa081fd3-4ecd-4b68-b80a-4da2d89e8833)
+![image](https://github.com/Mibazach/Projekt_JPWP_v2/assets/115176038/96a16d40-5735-43ab-94b6-32a72a28abf5)
+![image](https://github.com/Mibazach/Projekt_JPWP_v2/assets/115176038/aef682e3-7232-4faf-9ee9-43d97ef1c3f7)
+
