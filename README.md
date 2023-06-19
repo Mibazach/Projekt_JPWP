@@ -20,4 +20,6 @@ Teraz utwórz zapytanie do bazy. Stwórz tablicę o nazwie 'jpwp' zawierającą 
 ## Zadanie nr 3
 Utwórz kolejne zapytanie. Tym razem do wcześniej utworzonej tablicy spróbuj dodać kolumnę 'opinia', której typ to varchar o długości 50 bajtów. Nowa kolumna znajdować musi się za kolumną 'komentarz'. Zweryfikuj czy tablica została dodana do bazy danych poprzez panel phpMyAdmin.
 ## Zadanie nr 4
+Napisz przy użyciu PyQt5 (modułu QtWidgets) interfejs podobny do tego na obrazku. Okno ma mieć na początku czarne tło. Po naciśnięciu na przycisk danego koloru tło powinno się zmienić na ten kolor. (Podpowiedź: CSS Style Sheets)
+
 ## Zadanie nr 5

@@ -268,7 +268,7 @@ class MainApp(QMainWindow):
         self.bar_layout.addWidget(self.bar, stretch=1)
         self.bar.setLayout(QVBoxLayout())
         self.label_bar_title = QLabel("Filmonator™", self.bar)
-        self.label_bar_title.resize(450, 107)
+        self.label_bar_title.resize(400, 107)
         self.label_bar_title.setStyleSheet("background-color: rgba(255, 255, 255, 0);font: 50pt \"Pristina\"; color: "
                                            "white")
 
