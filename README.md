@@ -1,6 +1,6 @@
 # 🤜🏻 FilmonatorTM 🤛🏻
 
-😤 *"Remember to watch good movies"* 😤
+*"Remember to watch good movies"*
 
 Filmonator to projekt zaliczeniowy stworzony przez Jakuba Godulę oraz Michała Łobazę na zajęcia z języków programowania wysokiego poziomu. Projekt ten to prosta aplikacja GUI, która pozwala na łączenie się zdalne z serwerem MySQL, utworzenie konta użytkownika oraz dodawanie do swojej bazy filmów, których cechy zwracane są przez określone zapytanie do API. 
 
@@ -14,7 +14,8 @@ Potrzebne będzie: połączenie VPN z siecią AGH, konto serwera poczty AGH, IDE
 ## Zadanie nr. 1
 Stwórz połączenie z bazą danych poprzez kod napisany w języku Python. Podpowiedź: aby sprawdzić czy połączyłeś się z bazą możesz zastosować klauzulę try: except mysql.connecor.errrs.DatabaseError:
 ## Zadanie nr. 2
-Teraz utwórz zapytanie do bazy. Stwórz tablicę o nazwie 'jpwp' zawierającą pola: 'id_grupy' o cechach klucza głównego i typie int,  'ocena' o cesze nie pozwalającej być pustą i typie int o długości 10 bajtów, 'komentarz' o typie text z sortowaniem utf8_polish_ci. Zweryfikuj czy tablica została dodana do bazy danych poprzez panel phpMyAdmin.
+Teraz utwórz zapytanie do bazy. Stwórz tablicę o nazwie 'jpwp' zawierającą pola: 'id_grupy' o cechach klucza głównego i typie int,  'ocena' o cesze nie pozwalającej być pustą i typie int o długości 10 bajtów, 'komentarz' o typie text z sortowaniem utf8_polish_ci. Zweryfikuj czy tablica została dodana do bazy danych poprzez panel phpMyAdmin. Jeżeli udało Ci się wykonać zadanie, wykasuj zapytanie w kodzie. Nie zapomnij o .commit()!
 ## Zadanie nr. 3
+Utwórz kolejne zapytanie. Tym razem do wcześniej utworzonej tablicy spróbuj dodać kolumnę 'opinia', której typ to varchar o długośći 50 bajtów. Nowa kolumna znajdować musi się za kolumną 'komentarz'. Zweryfikuj czy tablica została dodana do bazy danych poprzez panel phpMyAdmin.
 ## Zadanie nr. 4
 ## Zadanie nr. 5
