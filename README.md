@@ -21,6 +21,7 @@ Teraz utwórz zapytanie do bazy. Stwórz tablicę o nazwie 'jpwp' zawierającą 
 Utwórz kolejne zapytanie. Tym razem do wcześniej utworzonej tablicy spróbuj dodać kolumnę 'opinia', której typ to varchar o długości 50 bajtów. Nowa kolumna znajdować musi się za kolumną 'komentarz'. Zweryfikuj czy tablica została dodana do bazy danych poprzez panel phpMyAdmin.
 ## Zadanie nr 4
 Napisz przy użyciu PyQt5 (modułu QtWidgets) interfejs podobny do tego na obrazku. Okno ma mieć na początku czarne tło. Po naciśnięciu na przycisk danego koloru tło powinno się zmienić na ten kolor. (Podpowiedź: CSS Style Sheets)
+
 ![image](https://github.com/Mibazach/Projekt_JPWP_v2/assets/115176038/785bcc66-97fc-47df-8827-4bb7a6abf781)
 ![image](https://github.com/Mibazach/Projekt_JPWP_v2/assets/115176038/1770a3ee-0548-4707-9beb-f45fee58935a)
 ![image](https://github.com/Mibazach/Projekt_JPWP_v2/assets/115176038/6fef3362-89b5-4718-b6dd-a01ae92501a3)
