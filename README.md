@@ -6,8 +6,8 @@ Filmonator to projekt zaliczeniowy stworzony przez Jakuba Godulę oraz Michała 
 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-Zadania do rozwiązania:
-Informacje dotyczące inicjalizowania bazy danych oraz potrzebnych bibliotek zostały podane wcześniej, jeżeli napotkałeś jakiś problem to zgłoś to do twórców projektu.
+👇 Zadania do rozwiązania 👇
+Informacje dotyczące inicjalizowania bazy danych oraz potrzebnych bibliotek zostały podane wcześniej, jeżeli napotkałeś jakiś problem to zgłoś to do nas - twórców projektu.
 Potrzebne będzie: połączenie VPN z siecią AGH, konto serwera poczty AGH, IDE obsługujące Pythona oraz Python, najlepiej w wersji najnowszej.
 
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------
